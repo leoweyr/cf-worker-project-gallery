@@ -1,0 +1,33 @@
+{
+  "name": "cf-worker-project-gallery",
+  "private": "true",
+  "version": "0.0.0",
+  "description": "A Cloudflare Worker proxy that 'frames' your frontend projects into a unified gallery. Automatically injects brand assets, repository links, docs, and contact info at the edge—saving you from building repetitive navigation UI for every site.",
+  "bugs": "https://github.com/leoweyr/cf-worker-project-gallery/issues",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev"
+  },
+  "keywords": [
+    "cloudflare-workers",
+    "htmlrewriter",
+    "react",
+    "micro-frontend",
+    "edge-proxy",
+    "ui-injection",
+    "project-gallery",
+    "portfolio-wrapper",
+    "zero-config-ui",
+    "brand-identity"
+  ],
+  "author": "leoweyr <contact@leoweyr.com>",
+  "license": "MIT",
+  "packageManager": "pnpm@10.33.0",
+  "devDependencies": {
+    "turbo": "^2.8.21"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/leoweyr/cf-worker-project-gallery"
+  }
+}
