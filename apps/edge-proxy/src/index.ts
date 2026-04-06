@@ -8,4 +8,3 @@ export default {
         return await proxyService.handle();
     }
 } satisfies ExportedHandler<Env>;
-

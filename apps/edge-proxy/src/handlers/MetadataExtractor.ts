@@ -1,4 +1,4 @@
-import { GalleryMeta } from '../types/GalleryMeta';
+import { type GalleryMeta } from '../types/GalleryMeta';
 
 
 export class MetadataExtractor {
