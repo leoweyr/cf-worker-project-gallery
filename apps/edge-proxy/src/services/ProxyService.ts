@@ -199,7 +199,6 @@ export class ProxyService {
 
         const metadataRewriter: HTMLRewriter = new HTMLRewriter()
             .on('title', metadataExtractor.createTitleHandler())
-            .on('meta', metadataExtractor.createMetaHandler())
             .on('link', metadataExtractor.createLinkHandler());
 
         const clonedResponse: Response = originResponse.clone();
@@ -209,7 +208,7 @@ export class ProxyService {
 
         return {
             title: rawMeta.title || 'Untitled Project',
-            iconUrl: UrlResolver.resolve(targetUrl, rawMeta.iconUrl)
+            iconUrl: rawMeta.iconUrl ? UrlResolver.resolve(targetUrl, rawMeta.iconUrl) : ''
         };
     }
 
