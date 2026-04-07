@@ -7,6 +7,8 @@ import { UrlResolver } from '../utils/UrlResolver';
 
 
 export class ProxyService {
+    private static readonly _UI_GALLERY_BUNDLE_PROXY_PATH: string = '/__project-gallery-ui-bundle.js';
+
     private readonly _request: Request;
     private readonly _environment: Env & EdgeProxyEnvironment;
 
@@ -224,6 +226,18 @@ export class ProxyService {
         return new URL(requestPathWithQuery, `${resolvedTargetContext.targetUrl.origin}/`).toString();
     }
 
+    private _buildUiGalleryBundleProxyUrl(): string {
+        const requestUrl: URL = new URL(this._request.url);
+        const proxyUrl: URL = new URL(ProxyService._UI_GALLERY_BUNDLE_PROXY_PATH, requestUrl.origin);
+        const customUiGalleryBundleUrl: string | null = requestUrl.searchParams.get('ui_gallery_bundle');
+
+        if (customUiGalleryBundleUrl) {
+            proxyUrl.searchParams.set('ui_gallery_bundle', customUiGalleryBundleUrl);
+        }
+
+        return `${proxyUrl.pathname}${proxyUrl.search}`;
+    }
+
     private async _fetchOrigin(fetchTargetUrl: string): Promise<Response | null> {
         const proxyRequest: Request = new Request(fetchTargetUrl, {
             method: this._request.method,
@@ -238,9 +252,36 @@ export class ProxyService {
         }
     }
 
+    private async _createUiGalleryBundleResponse(): Promise<Response> {
+        const uiGalleryBundleUrl: string = this._resolveUiGalleryBundleUrl();
+
+        try {
+            const uiGalleryBundleResponse: Response = await fetch(uiGalleryBundleUrl, {
+                method: 'GET',
+                redirect: 'follow'
+            });
+
+            if (!uiGalleryBundleResponse.ok) {
+                return this._createErrorResponse('Failed to fetch UI gallery bundle URL', 502);
+            }
+
+            const responseHeaders: Headers = new Headers(uiGalleryBundleResponse.headers);
+            responseHeaders.set('Content-Type', 'application/javascript; charset=utf-8');
+            responseHeaders.set('Cache-Control', 'public, max-age=300');
+
+            return new Response(uiGalleryBundleResponse.body, {
+                status: uiGalleryBundleResponse.status,
+                statusText: uiGalleryBundleResponse.statusText,
+                headers: responseHeaders
+            });
+        } catch {
+            return this._createErrorResponse('Failed to fetch UI gallery bundle URL', 502);
+        }
+    }
+
     private async _transformHtmlResponse(originResponse: Response, targetUrl: string): Promise<Response> {
         const galleryMeta: GalleryMeta = await this._extractMetadata(originResponse, targetUrl);
-        const uiGalleryBundleUrl: string = this._resolveUiGalleryBundleUrl();
+        const uiGalleryBundleUrl: string = this._buildUiGalleryBundleProxyUrl();
 
         const bodyInjector: BodyInjector = new BodyInjector(galleryMeta, uiGalleryBundleUrl);
 
@@ -311,6 +352,12 @@ export class ProxyService {
     }
 
     public async handle(): Promise<Response> {
+        const requestUrl: URL = new URL(this._request.url);
+
+        if (requestUrl.pathname === ProxyService._UI_GALLERY_BUNDLE_PROXY_PATH) {
+            return await this._createUiGalleryBundleResponse();
+        }
+
         const resolvedTargetContextResult: ResolvedTargetContext | Response = this._resolveTargetContext();
 
         if (resolvedTargetContextResult instanceof Response) {
