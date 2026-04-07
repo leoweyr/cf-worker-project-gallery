@@ -53,23 +53,33 @@ export class ProxyService {
         }
     }
 
-    private _resolveTargetFromHostMap(): URL | null {
+    private _resolveTargetHostUrlMap(): string | null {
         const targetHostUrlMap: string | undefined = this._environment.TARGET_HOST_URL_MAP;
 
         if (!targetHostUrlMap) {
             return null;
         }
 
-        const normalizedTargetHostUrlMap: string = targetHostUrlMap.replace(/^\uFEFF+/, '').trim();
+        return targetHostUrlMap;
+    }
 
-        if (!normalizedTargetHostUrlMap) {
-            return null;
+    private _stripOptionalQuotes(rawValue: string): string {
+        const normalizedRawValue: string = this._normalizeTargetValue(rawValue);
+        const hasDoubleQuotes: boolean = normalizedRawValue.startsWith('"') && normalizedRawValue.endsWith('"');
+        const hasSingleQuotes: boolean = normalizedRawValue.startsWith('\'') && normalizedRawValue.endsWith('\'');
+
+        if (!hasDoubleQuotes && !hasSingleQuotes) {
+            return normalizedRawValue;
         }
 
+        return this._normalizeTargetValue(normalizedRawValue.slice(1, -1));
+    }
+
+    private _parseTargetHostUrlMapFromJson(targetHostUrlMap: string): Record<string, string> | null {
         let parsedTargetHostUrlMap: unknown;
 
         try {
-            parsedTargetHostUrlMap = JSON.parse(normalizedTargetHostUrlMap);
+            parsedTargetHostUrlMap = JSON.parse(targetHostUrlMap);
         } catch {
             return null;
         }
@@ -78,11 +88,128 @@ export class ProxyService {
             return null;
         }
 
-        const requestHostname: string = new URL(this._request.url).hostname.toLowerCase();
-        const targetHostUrlMapRecord: Record<string, unknown> = parsedTargetHostUrlMap as Record<string, unknown>;
-        const resolvedTargetValue: unknown = targetHostUrlMapRecord[requestHostname];
+        const parsedTargetHostUrlMapRecord: Record<string, unknown> = parsedTargetHostUrlMap as Record<string, unknown>;
+        const normalizedTargetHostUrlMapRecord: Record<string, string> = {};
 
-        if (typeof resolvedTargetValue !== 'string') {
+        for (const [rawHostKey, rawTargetUrl] of Object.entries(parsedTargetHostUrlMapRecord)) {
+            if (typeof rawTargetUrl !== 'string') {
+                return null;
+            }
+
+            const normalizedHostKey: string = this._normalizeTargetValue(rawHostKey).toLowerCase();
+            const normalizedTargetUrl: string = this._normalizeTargetValue(rawTargetUrl);
+
+            if (!normalizedHostKey || !normalizedTargetUrl) {
+                return null;
+            }
+
+            normalizedTargetHostUrlMapRecord[normalizedHostKey] = normalizedTargetUrl;
+        }
+
+        if (Object.keys(normalizedTargetHostUrlMapRecord).length === 0) {
+            return null;
+        }
+
+        return normalizedTargetHostUrlMapRecord;
+    }
+
+    private _resolveMapEntrySeparatorIndex(normalizedMapEntry: string): number {
+        const httpsSeparatorIndex: number = normalizedMapEntry.indexOf(':https://');
+        const httpSeparatorIndex: number = normalizedMapEntry.indexOf(':http://');
+
+        if (httpsSeparatorIndex >= 0 && httpSeparatorIndex >= 0) {
+            return Math.min(httpsSeparatorIndex, httpSeparatorIndex);
+        }
+
+        if (httpsSeparatorIndex >= 0) {
+            return httpsSeparatorIndex;
+        }
+
+        if (httpSeparatorIndex >= 0) {
+            return httpSeparatorIndex;
+        }
+
+        return normalizedMapEntry.indexOf(':');
+    }
+
+    private _parseTargetHostUrlMapFromRelaxedFormat(targetHostUrlMap: string): Record<string, string> | null {
+        const hasWrappedBraces: boolean = targetHostUrlMap.startsWith('{') && targetHostUrlMap.endsWith('}');
+        const normalizedMapBody: string = hasWrappedBraces
+            ? this._normalizeTargetValue(targetHostUrlMap.slice(1, -1))
+            : targetHostUrlMap;
+
+        if (!normalizedMapBody) {
+            return null;
+        }
+
+        const mapEntries: string[] = normalizedMapBody.split(',');
+        const normalizedTargetHostUrlMapRecord: Record<string, string> = {};
+
+        for (const rawMapEntry of mapEntries) {
+            const normalizedMapEntry: string = this._normalizeTargetValue(rawMapEntry);
+
+            if (!normalizedMapEntry) {
+                return null;
+            }
+
+            const entrySeparatorIndex: number = this._resolveMapEntrySeparatorIndex(normalizedMapEntry);
+
+            if (entrySeparatorIndex <= 0) {
+                return null;
+            }
+
+            const rawHostKey: string = normalizedMapEntry.slice(0, entrySeparatorIndex);
+            const rawTargetUrl: string = normalizedMapEntry.slice(entrySeparatorIndex + 1);
+            const normalizedHostKey: string = this._normalizeTargetValue(this._stripOptionalQuotes(rawHostKey)).toLowerCase();
+            const normalizedTargetUrl: string = this._normalizeTargetValue(this._stripOptionalQuotes(rawTargetUrl));
+
+            if (!normalizedHostKey || !normalizedTargetUrl) {
+                return null;
+            }
+
+            normalizedTargetHostUrlMapRecord[normalizedHostKey] = normalizedTargetUrl;
+        }
+
+        if (Object.keys(normalizedTargetHostUrlMapRecord).length === 0) {
+            return null;
+        }
+
+        return normalizedTargetHostUrlMapRecord;
+    }
+
+    private _parseTargetHostUrlMap(targetHostUrlMap: string): Record<string, string> | null {
+        const parsedJsonTargetHostUrlMap: Record<string, string> | null = this._parseTargetHostUrlMapFromJson(targetHostUrlMap);
+
+        if (parsedJsonTargetHostUrlMap) {
+            return parsedJsonTargetHostUrlMap;
+        }
+
+        return this._parseTargetHostUrlMapFromRelaxedFormat(targetHostUrlMap);
+    }
+
+    private _resolveTargetFromHostMap(): URL | null {
+        const targetHostUrlMap: string | null = this._resolveTargetHostUrlMap();
+
+        if (!targetHostUrlMap) {
+            return null;
+        }
+
+        const normalizedTargetHostUrlMap: string = this._normalizeTargetValue(targetHostUrlMap);
+
+        if (!normalizedTargetHostUrlMap) {
+            return null;
+        }
+
+        const parsedTargetHostUrlMapRecord: Record<string, string> | null = this._parseTargetHostUrlMap(normalizedTargetHostUrlMap);
+
+        if (!parsedTargetHostUrlMapRecord) {
+            return null;
+        }
+
+        const requestHostname: string = new URL(this._request.url).hostname.toLowerCase();
+        const resolvedTargetValue: string | undefined = parsedTargetHostUrlMapRecord[requestHostname];
+
+        if (!resolvedTargetValue) {
             return null;
         }
 
