@@ -239,9 +239,16 @@ export class ProxyService {
     }
 
     private async _fetchOrigin(fetchTargetUrl: string): Promise<Response | null> {
+        const proxyRequestHeaders: Headers = new Headers(this._request.headers);
+        proxyRequestHeaders.delete('If-None-Match');
+        proxyRequestHeaders.delete('If-Modified-Since');
+        proxyRequestHeaders.delete('If-Match');
+        proxyRequestHeaders.delete('If-Unmodified-Since');
+        proxyRequestHeaders.delete('If-Range');
+
         const proxyRequest: Request = new Request(fetchTargetUrl, {
             method: this._request.method,
-            headers: this._request.headers,
+            headers: proxyRequestHeaders,
             redirect: 'follow'
         });
 
@@ -333,7 +340,13 @@ export class ProxyService {
         const newHeaders: Headers = new Headers(transformedResponse.headers);
         newHeaders.delete('Content-Security-Policy');
         newHeaders.delete('X-Frame-Options');
+        newHeaders.delete('ETag');
+        newHeaders.delete('Last-Modified');
+        newHeaders.delete('Age');
         newHeaders.set('X-Gallery-Injected', 'true');
+        newHeaders.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+        newHeaders.set('Pragma', 'no-cache');
+        newHeaders.set('Expires', '0');
 
         return new Response(transformedResponse.body, {
             status: transformedResponse.status,
