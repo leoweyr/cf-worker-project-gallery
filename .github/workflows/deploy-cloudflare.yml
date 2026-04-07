@@ -82,5 +82,6 @@ jobs:
                 with:
                     workers_environment: ${{ needs.resolve_target.outputs.workers_environment }}
                     ui_gallery_bundle_url: ${{ needs.deploy_pages.outputs.pages_url }}/global-ui-bundle.js
+                    target_host_url_map: ${{ vars.CLOUDFLARE_TARGET_HOST_URL_MAP }}
                     cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                     cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

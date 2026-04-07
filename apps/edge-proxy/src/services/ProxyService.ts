@@ -7,8 +7,6 @@ import { UrlResolver } from '../utils/UrlResolver';
 
 
 export class ProxyService {
-    private static readonly _TARGET_COOKIE_NAME: string = 'gallery_target';
-
     private readonly _request: Request;
     private readonly _environment: Env & EdgeProxyEnvironment;
 
@@ -18,63 +16,23 @@ export class ProxyService {
     }
 
     private _resolveTargetContext(): ResolvedTargetContext | Response {
-        const queryTargetValue: string | null = this._getQueryTargetValue();
+        const mappedTargetUrl: URL | null = this._resolveTargetFromHostMap();
 
-        if (queryTargetValue) {
-            const parsedQueryTargetUrl: URL | null = this._parseHttpUrl(queryTargetValue);
-
-            if (!parsedQueryTargetUrl) {
-                return new Response(JSON.stringify({
-                    error: 'Invalid target URL',
-                    provided: queryTargetValue
-                }), {
-                    status: 400,
-                    headers: { 'Content-Type': 'application/json' }
-                });
-            }
-
-            return {
-                targetUrl: parsedQueryTargetUrl,
-                hasExplicitTarget: true
+        if (mappedTargetUrl) {
+            const resolvedTargetContext: ResolvedTargetContext = {
+                targetUrl: mappedTargetUrl
             };
-        }
 
-        const refererTargetUrl: URL | null = this._resolveTargetFromReferer();
-
-        if (refererTargetUrl) {
-            return {
-                targetUrl: refererTargetUrl,
-                hasExplicitTarget: false
-            };
-        }
-
-        const cookieTargetUrl: URL | null = this._resolveTargetFromCookie();
-
-        if (cookieTargetUrl) {
-            return {
-                targetUrl: cookieTargetUrl,
-                hasExplicitTarget: false
-            };
+            return resolvedTargetContext;
         }
 
         return new Response(JSON.stringify({
-            error: 'Missing target parameter',
-            usage: '/?target=https://example.com'
+            error: 'Missing target host mapping.',
+            hint: 'Configure TARGET_HOST_URL_MAP with current request host as the key.'
         }), {
             status: 400,
             headers: { 'Content-Type': 'application/json' }
         });
-    }
-
-    private _getQueryTargetValue(): string | null {
-        const url: URL = new URL(this._request.url);
-        const targetUrl: string | null = url.searchParams.get('target');
-
-        if (!targetUrl) {
-            return null;
-        }
-
-        return this._normalizeTargetValue(targetUrl);
     }
 
     private _normalizeTargetValue(targetValue: string): string {
@@ -95,74 +53,39 @@ export class ProxyService {
         }
     }
 
-    private _resolveTargetFromReferer(): URL | null {
-        const refererHeaderValue: string | null = this._request.headers.get('Referer');
+    private _resolveTargetFromHostMap(): URL | null {
+        const targetHostUrlMap: string | undefined = this._environment.TARGET_HOST_URL_MAP;
 
-        if (!refererHeaderValue) {
+        if (!targetHostUrlMap) {
             return null;
         }
 
+        let parsedTargetHostUrlMap: unknown;
+
         try {
-            const refererUrl: URL = new URL(refererHeaderValue);
-            const refererTargetValue: string | null = refererUrl.searchParams.get('target');
-
-            if (!refererTargetValue) {
-                return null;
-            }
-
-            const normalizedRefererTargetValue: string = this._normalizeTargetValue(refererTargetValue);
-
-            return this._parseHttpUrl(normalizedRefererTargetValue);
+            parsedTargetHostUrlMap = JSON.parse(targetHostUrlMap);
         } catch {
             return null;
         }
-    }
 
-    private _resolveTargetFromCookie(): URL | null {
-        const cookieHeaderValue: string | null = this._request.headers.get('Cookie');
-
-        if (!cookieHeaderValue) {
+        if (!parsedTargetHostUrlMap || typeof parsedTargetHostUrlMap !== 'object' || Array.isArray(parsedTargetHostUrlMap)) {
             return null;
         }
 
-        const encodedTargetValue: string | null = this._extractCookieValue(
-            cookieHeaderValue,
-            ProxyService._TARGET_COOKIE_NAME
-        );
+        const requestHostname: string = new URL(this._request.url).hostname.toLowerCase();
+        const targetHostUrlMapRecord: Record<string, unknown> = parsedTargetHostUrlMap as Record<string, unknown>;
+        const resolvedTargetValue: unknown = targetHostUrlMapRecord[requestHostname];
 
-        if (!encodedTargetValue) {
+        if (typeof resolvedTargetValue !== 'string') {
             return null;
         }
 
-        try {
-            const decodedTargetValue: string = decodeURIComponent(encodedTargetValue);
-            const normalizedTargetValue: string = this._normalizeTargetValue(decodedTargetValue);
-            return this._parseHttpUrl(normalizedTargetValue);
-        } catch {
-            return null;
-        }
-    }
+        const normalizedResolvedTargetValue: string = this._normalizeTargetValue(resolvedTargetValue);
 
-    private _extractCookieValue(cookieHeaderValue: string, cookieName: string): string | null {
-        const cookieSegments: string[] = cookieHeaderValue.split(';');
-
-        for (const cookieSegment of cookieSegments) {
-            const normalizedCookieSegment: string = cookieSegment.trim();
-            const cookiePrefix: string = `${cookieName}=`;
-
-            if (normalizedCookieSegment.startsWith(cookiePrefix)) {
-                return normalizedCookieSegment.slice(cookiePrefix.length);
-            }
-        }
-
-        return null;
+        return this._parseHttpUrl(normalizedResolvedTargetValue);
     }
 
     private _buildFetchTargetUrl(resolvedTargetContext: ResolvedTargetContext): string {
-        if (resolvedTargetContext.hasExplicitTarget) {
-            return resolvedTargetContext.targetUrl.toString();
-        }
-
         const requestUrl: URL = new URL(this._request.url);
         const requestPathWithQuery: string = `${requestUrl.pathname}${requestUrl.search}`;
         return new URL(requestPathWithQuery, `${resolvedTargetContext.targetUrl.origin}/`).toString();
@@ -232,34 +155,17 @@ export class ProxyService {
             : 'https://cdn.example.com/global-ui-bundle.js';
     }
 
-    private _createFinalResponse(transformedResponse: Response, targetUrl: URL): Response {
+    private _createFinalResponse(transformedResponse: Response): Response {
         const newHeaders: Headers = new Headers(transformedResponse.headers);
         newHeaders.delete('Content-Security-Policy');
         newHeaders.delete('X-Frame-Options');
         newHeaders.set('X-Gallery-Injected', 'true');
-        newHeaders.append('Set-Cookie', this._createTargetCookie(targetUrl));
 
         return new Response(transformedResponse.body, {
             status: transformedResponse.status,
             statusText: transformedResponse.statusText,
             headers: newHeaders
         });
-    }
-
-    private _attachTargetCookie(response: Response, targetUrl: URL): Response {
-        const responseHeaders: Headers = new Headers(response.headers);
-        responseHeaders.append('Set-Cookie', this._createTargetCookie(targetUrl));
-
-        return new Response(response.body, {
-            status: response.status,
-            statusText: response.statusText,
-            headers: responseHeaders
-        });
-    }
-
-    private _createTargetCookie(targetUrl: URL): string {
-        const encodedTargetUrl: string = encodeURIComponent(targetUrl.toString());
-        return `${ProxyService._TARGET_COOKIE_NAME}=${encodedTargetUrl}; Path=/; HttpOnly; SameSite=Lax; Max-Age=1800`;
     }
 
     private _createErrorResponse(message: string, status: number): Response {
@@ -289,7 +195,7 @@ export class ProxyService {
         const contentType: string = originResponse.headers.get('Content-Type') || '';
 
         if (!contentType.includes('text/html')) {
-            return this._attachTargetCookie(originResponse, resolvedTargetContext.targetUrl);
+            return originResponse;
         }
 
         const transformedResponse: Response = await this._transformHtmlResponse(
@@ -297,6 +203,6 @@ export class ProxyService {
             resolvedTargetContext.targetUrl.toString()
         );
 
-        return this._createFinalResponse(transformedResponse, resolvedTargetContext.targetUrl);
+        return this._createFinalResponse(transformedResponse);
     }
 }

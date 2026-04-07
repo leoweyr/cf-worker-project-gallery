@@ -4,16 +4,20 @@ description: Deploy edge proxy worker to Cloudflare Workers.
 
 inputs:
     workers_environment:
-        description: Wrangler Environment Name
+        description: Wrangler environment name.
         required: true
     ui_gallery_bundle_url:
-        description: UI Gallery Bundle URL for Edge Proxy
+        description: UI gallery bundle URL for edge proxy.
         required: true
+    target_host_url_map:
+        description: Target host URL map JSON for edge proxy.
+        required: false
+        default: ''
     cloudflare_api_token:
-        description: Cloudflare API Token
+        description: Cloudflare API token.
         required: true
     cloudflare_account_id:
-        description: Cloudflare Account ID
+        description: Cloudflare account ID.
         required: true
 
 
@@ -46,3 +50,4 @@ runs:
                     deploy
                     --env ${{ inputs.workers_environment }}
                     --var UI_GALLERY_BUNDLE_URL:${{ inputs.ui_gallery_bundle_url }}
+                    --var TARGET_HOST_URL_MAP:${{ inputs.target_host_url_map }}
