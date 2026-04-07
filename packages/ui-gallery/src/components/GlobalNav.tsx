@@ -30,7 +30,7 @@ class GlobalNav extends Component<GlobalNavProperties, {}> {
             height: `${GlobalNav.NAV_HEIGHT}px`,
             backgroundColor: '#0d1117',
             borderBottom: '1px solid #30363d',
-            zIndex: 9999,
+            zIndex: 2147483647,
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif'
         };
     }

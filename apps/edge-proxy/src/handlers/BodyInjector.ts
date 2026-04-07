@@ -17,10 +17,10 @@ export class BodyInjector {
 
                 if (!this._hasInjectedMeta) {
                     const metaScript: string = `<script>window.__GALLERY_META__ = ${JSON.stringify(this._galleryMeta)};</script>`;
-                    const mountPoint: string = '<div id="gallery-root"></div>';
+                    const mountPoint: string = '<div id="gallery-root" style="position: relative; z-index: 2147483647;"></div>';
                     const uiScript: string = `<script defer src="${this._uiGalleryBundleUrl}"></script>`;
                     const bodyLockScript: string = '<script>document.body.style.margin="0";document.body.style.overflow="hidden";</script>';
-                    const wrapperOpen: string = '<div id="gallery-original-content" style="position: fixed; top: 64px; left: 0; right: 0; bottom: 0; overflow-y: auto; box-sizing: border-box;">';
+                    const wrapperOpen: string = '<div id="gallery-original-content" style="position: fixed; top: 64px; left: 0; right: 0; bottom: 0; overflow-y: auto; box-sizing: border-box; z-index: 1;">';
 
                     element.prepend(metaScript + mountPoint + uiScript + bodyLockScript + wrapperOpen, { html: true });
                     this._hasInjectedMeta = true;
