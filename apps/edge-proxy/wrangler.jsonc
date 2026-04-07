@@ -15,10 +15,10 @@
 		"nodejs_compat"
 	],
 	"env": {
-		"preview": {
+		"Preview": {
 			"name": "project-gallery-edge-proxy-preview"
 		},
-		"production": {
+		"Production": {
 			"name": "project-gallery-edge-proxy"
 		}
 	}
