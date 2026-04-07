@@ -42,6 +42,8 @@ runs:
 
         -   name: 🚀 Deploy Worker
             uses: cloudflare/wrangler-action@v3
+            env:
+                TARGET_HOST_URL_MAP: ${{ inputs.target_host_url_map }}
             with:
                 apiToken: ${{ inputs.cloudflare_api_token }}
                 accountId: ${{ inputs.cloudflare_account_id }}
@@ -50,4 +52,4 @@ runs:
                     deploy
                     --env ${{ inputs.workers_environment }}
                     --var UI_GALLERY_BUNDLE_URL:${{ inputs.ui_gallery_bundle_url }}
-                    --var 'TARGET_HOST_URL_MAP:${{ inputs.target_host_url_map }}'
+                    --var TARGET_HOST_URL_MAP:$TARGET_HOST_URL_MAP
