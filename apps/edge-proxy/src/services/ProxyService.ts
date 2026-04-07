@@ -60,10 +60,16 @@ export class ProxyService {
             return null;
         }
 
+        const normalizedTargetHostUrlMap: string = targetHostUrlMap.replace(/^\uFEFF+/, '').trim();
+
+        if (!normalizedTargetHostUrlMap) {
+            return null;
+        }
+
         let parsedTargetHostUrlMap: unknown;
 
         try {
-            parsedTargetHostUrlMap = JSON.parse(targetHostUrlMap);
+            parsedTargetHostUrlMap = JSON.parse(normalizedTargetHostUrlMap);
         } catch {
             return null;
         }
