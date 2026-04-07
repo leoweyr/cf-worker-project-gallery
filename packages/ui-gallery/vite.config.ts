@@ -6,6 +6,11 @@ import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 
 
 const formats: LibraryFormats[] = ['iife'];
+const browserProcessShim: string = JSON.stringify({
+    env: {
+        NODE_ENV: 'production'
+    }
+});
 
 
 export default defineConfig({
@@ -13,6 +18,10 @@ export default defineConfig({
         ...react(),
         ...cssInjectedByJsPlugin()
     ],
+    define: {
+        'process.env.NODE_ENV': JSON.stringify('production'),
+        process: browserProcessShim
+    },
     build: {
         lib: {
             entry: resolve(__dirname, 'src/index.tsx'),
