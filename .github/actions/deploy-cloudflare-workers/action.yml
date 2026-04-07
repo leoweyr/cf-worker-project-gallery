@@ -1,0 +1,50 @@
+name: Deploy Cloudflare Worker
+description: Deploy edge proxy worker to Cloudflare Workers.
+
+
+inputs:
+    workers_environment:
+        description: Wrangler Environment Name
+        required: true
+    ui_gallery_bundle_url:
+        description: UI Gallery Bundle URL for Edge Proxy
+        required: true
+    cloudflare_api_token:
+        description: Cloudflare API Token
+        required: true
+    cloudflare_account_id:
+        description: Cloudflare Account ID
+        required: true
+
+
+runs:
+    using: composite
+    steps:
+        -   name: 📂 Checkout Repository
+            uses: actions/checkout@v4
+
+        -   name: 🛠️ Config PNPM
+            uses: pnpm/action-setup@v4
+            with:
+                version: 10
+
+        -   name: 🛠️ Config Node.js
+            uses: actions/setup-node@v4
+            with:
+                node-version: 20
+                cache: pnpm
+
+        -   name: 📦 Install Dependencies
+            run: pnpm install --frozen-lockfile
+            shell: bash
+
+        -   name: 🚀 Deploy Worker
+            uses: cloudflare/wrangler-action@v3
+            with:
+                apiToken: ${{ inputs.cloudflare_api_token }}
+                accountId: ${{ inputs.cloudflare_account_id }}
+                workingDirectory: apps/edge-proxy
+                command: >-
+                    deploy
+                    --env ${{ inputs.workers_environment }}
+                    --var UI_GALLERY_BUNDLE_URL:${{ inputs.ui_gallery_bundle_url }}

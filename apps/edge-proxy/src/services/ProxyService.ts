@@ -1,3 +1,4 @@
+import type { EdgeProxyEnvironment } from '../types/EdgeProxyEnvironment';
 import type { ResolvedTargetContext } from '../types/ResolvedTargetContext';
 import type { GalleryMeta } from '../types/GalleryMeta';
 import { BodyInjector } from '../handlers/BodyInjector';
@@ -9,9 +10,9 @@ export class ProxyService {
     private static readonly _TARGET_COOKIE_NAME: string = 'gallery_target';
 
     private readonly _request: Request;
-    private readonly _environment: Env;
+    private readonly _environment: Env & EdgeProxyEnvironment;
 
-    public constructor(request: Request, environment: Env) {
+    public constructor(request: Request, environment: Env & EdgeProxyEnvironment) {
         this._request = request;
         this._environment = environment;
     }
@@ -183,9 +184,9 @@ export class ProxyService {
 
     private async _transformHtmlResponse(originResponse: Response, targetUrl: string): Promise<Response> {
         const galleryMeta: GalleryMeta = await this._extractMetadata(originResponse, targetUrl);
-        const uiBundleUrl: string = this._resolveUiBundleUrl();
+        const uiGalleryBundleUrl: string = this._resolveUiGalleryBundleUrl();
 
-        const bodyInjector: BodyInjector = new BodyInjector(galleryMeta, uiBundleUrl);
+        const bodyInjector: BodyInjector = new BodyInjector(galleryMeta, uiGalleryBundleUrl);
 
         const injectionRewriter: HTMLRewriter = new HTMLRewriter()
             .on('body', bodyInjector.createBodyHandler())
@@ -212,13 +213,18 @@ export class ProxyService {
         };
     }
 
-    private _resolveUiBundleUrl(): string {
+    private _resolveUiGalleryBundleUrl(): string {
         const url: URL = new URL(this._request.url);
-        const customUiBundleUrl: string | null = url.searchParams.get('ui_bundle');
+        const customUiGalleryBundleUrl: string | null = url.searchParams.get('ui_gallery_bundle');
+        const environmentUiGalleryBundleUrl: string | undefined = this._environment.UI_GALLERY_BUNDLE_URL;
         const isDevelopment: boolean = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
 
-        if (customUiBundleUrl) {
-            return customUiBundleUrl;
+        if (customUiGalleryBundleUrl) {
+            return customUiGalleryBundleUrl;
+        }
+
+        if (environmentUiGalleryBundleUrl) {
+            return environmentUiGalleryBundleUrl;
         }
 
         return isDevelopment
