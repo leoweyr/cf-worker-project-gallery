@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+# [0.2.1](https://github.com/leoweyr/cf-worker-project-gallery/compare/v0.2.0...v0.2.1) (2026-04-08)
+### Bug Fixes
+
+* **ui-gallery:** restore proxied site keyboard shortcuts after closing sidebar ([ccd14f6](https://github.com/leoweyr/cf-worker-project-gallery/commit/ccd14f65d240a9387deda5b34b6cfc3d4331192a)) [@leoweyr](https://github.com/leoweyr)
+
+
+
 # [0.2.0](https://github.com/leoweyr/cf-worker-project-gallery/compare/v0.1.0...v0.2.0) (2026-04-08)
 ### Bug Fixes
 
