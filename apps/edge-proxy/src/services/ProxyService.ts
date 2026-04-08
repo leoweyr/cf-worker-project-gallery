@@ -421,7 +421,7 @@ export class ProxyService {
 
         const transformedResponse: Response = await this._transformHtmlResponse(
             originResponse,
-            resolvedTargetContext.targetUrl.toString()
+            fetchTargetUrl
         );
 
         return this._createFinalResponse(transformedResponse);
