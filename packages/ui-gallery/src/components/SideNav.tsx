@@ -21,6 +21,7 @@ interface SideNavState {
 
 class SideNav extends Component<SideNavProps, SideNavState> {
     private static readonly SIDENAV_WIDTH: number = 280;
+    private static readonly BLOCK_BACKGROUND: string = '#161b22';
     private static readonly REPO_URL: string = 'https://github.com/leoweyr/cf-worker-project-gallery';
 
     private _animationFrameId?: number;
@@ -65,13 +66,8 @@ class SideNav extends Component<SideNavProps, SideNavState> {
                 />
 
                 <aside style={this._getSideNavStyles(isAnimatedIn)}>
-                    <div style={this._getContentStyles()}>
-                        {this._renderHeader()}
-                        {this._renderGitHubInfo()}
-                        {this._renderMenuItems()}
-                        <div style={{ flex: 1 }} />
-                        {this._renderBadge()}
-                    </div>
+                    {this._renderFirstArea()}
+                    {this._renderSecondArea()}
                 </aside>
             </div>
         );
@@ -128,35 +124,35 @@ class SideNav extends Component<SideNavProps, SideNavState> {
         };
     }
 
-    private _getContentStyles(): CSSProperties {
+    private _getFirstAreaStyles(): CSSProperties {
         return {
             display: 'flex',
             flexDirection: 'column',
-            height: '100%',
-            padding: '24px',
-            boxSizing: 'border-box',
-            overflowY: 'auto'
+            flexShrink: 0,
+            padding: '16px',
+            gap: '12px'
         };
     }
 
-    private _getHeaderStyles(): CSSProperties {
+    private _getIconTitleBlockStyles(): CSSProperties {
         return {
             display: 'flex',
-            alignItems: 'center',
-            gap: '16px',
-            marginBottom: '24px',
-            paddingBottom: '24px',
-            borderBottom: '1px solid #30363d'
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            gap: '12px',
+            padding: '16px',
+            backgroundColor: SideNav.BLOCK_BACKGROUND,
+            borderRadius: '8px'
         };
     }
 
     private _getIconStyles(): CSSProperties {
         return {
-            width: '48px',
-            height: '48px',
-            minWidth: '48px',
-            minHeight: '48px',
-            borderRadius: '8px',
+            width: '40px',
+            height: '40px',
+            minWidth: '40px',
+            minHeight: '40px',
+            borderRadius: '6px',
             objectFit: 'contain' as const
         };
     }
@@ -164,115 +160,126 @@ class SideNav extends Component<SideNavProps, SideNavState> {
     private _getTitleStyles(): CSSProperties {
         return {
             color: '#f0f6fc',
-            fontSize: '18px',
-            fontWeight: 700,
-            lineHeight: '1.3',
-            letterSpacing: '-0.02em',
+            fontSize: '16px',
+            fontWeight: 600,
+            lineHeight: '1.4',
+            letterSpacing: '-0.01em',
             wordBreak: 'break-word'
         };
     }
 
-    private _renderHeader(): ReactNode {
-        const { iconUrl, title } = this.props;
-
-        return (
-            <div style={this._getHeaderStyles()}>
-                {iconUrl ? (
-                    <img
-                        src={iconUrl}
-                        alt="Project Icon"
-                        style={this._getIconStyles()}
-                    />
-                ) : (
-                    <div style={{
-                        ...this._getIconStyles(),
-                        backgroundColor: '#21262d',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}>
-                        <span style={{ color: '#8b949e', fontSize: '20px' }}>📦</span>
-                    </div>
-                )}
-
-                <span style={this._getTitleStyles()}>{title}</span>
-            </div>
-        );
-    }
-
-    private _getGitHubInfoSectionStyles(): CSSProperties {
+    private _getGitInfoBlockStyles(): CSSProperties {
         return {
-            marginBottom: '24px',
-            paddingBottom: '24px',
-            borderBottom: '1px solid #30363d'
+            position: 'relative',
+            zIndex: 1,
+            padding: '12px 16px',
+            backgroundColor: SideNav.BLOCK_BACKGROUND,
+            borderRadius: '8px'
         };
     }
 
-    private _renderGitHubInfo(): ReactNode {
-        const { gitUrl } = this.props;
-
-        if (!gitUrl) {
-            return null;
-        }
+    private _renderFirstArea(): ReactNode {
+        const { iconUrl, title, gitUrl } = this.props;
 
         return (
-            <div style={this._getGitHubInfoSectionStyles()}>
-                <GitHubInfo gitUrl={gitUrl} />
+            <div style={this._getFirstAreaStyles()}>
+                <div style={this._getIconTitleBlockStyles()}>
+                    {iconUrl ? (
+                        <img
+                            src={iconUrl}
+                            alt="Project Icon"
+                            style={this._getIconStyles()}
+                        />
+                    ) : (
+                        <div style={{
+                            ...this._getIconStyles(),
+                            backgroundColor: '#21262d',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            <span style={{ color: '#8b949e', fontSize: '18px' }}>📦</span>
+                        </div>
+                    )}
+
+                    <span style={this._getTitleStyles()}>{title}</span>
+                </div>
+
+                {gitUrl && (
+                    <div style={this._getGitInfoBlockStyles()}>
+                        <GitHubInfo gitUrl={gitUrl} />
+                    </div>
+                )}
             </div>
         );
     }
 
-    private _getMenuSectionStyles(): CSSProperties {
+    private _getSecondAreaStyles(): CSSProperties {
         return {
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px',
-            marginBottom: '24px'
+            flex: 1,
+            minHeight: 0,
+            padding: '0 16px 16px 16px'
         };
     }
 
-    private _getMenuItemStyles(): CSSProperties {
+    private _getMenuScrollContainerStyles(): CSSProperties {
+        return {
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            backgroundColor: SideNav.BLOCK_BACKGROUND,
+            borderRadius: '8px'
+        };
+    }
+
+    private _getMenuItemStyles(isLast: boolean): CSSProperties {
         return {
             display: 'block',
-            padding: '12px 16px',
+            padding: '14px 16px',
             color: '#8b949e',
             fontSize: '14px',
             fontWeight: 500,
             textDecoration: 'none',
-            borderRadius: '6px',
+            borderBottom: isLast ? 'none' : '1px solid #30363d',
             transition: 'background-color 0.15s ease, color 0.15s ease'
         };
     }
 
-    private _renderMenuItems(): ReactNode {
+    private _renderSecondArea(): ReactNode {
         const { menuItems } = this.props;
 
-        if (menuItems.length === 0) {
-            return null;
-        }
-
         return (
-            <nav style={this._getMenuSectionStyles()}>
-                {menuItems.map((item: MenuItem): ReactNode => (
-                    <a
-                        key={item.identifier}
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={this._getMenuItemStyles()}
-                        onMouseEnter={(event: React.MouseEvent<HTMLAnchorElement>): void => {
-                            event.currentTarget.style.backgroundColor = '#21262d';
-                            event.currentTarget.style.color = '#ffffff';
-                        }}
-                        onMouseLeave={(event: React.MouseEvent<HTMLAnchorElement>): void => {
-                            event.currentTarget.style.backgroundColor = 'transparent';
-                            event.currentTarget.style.color = '#8b949e';
-                        }}
-                    >
-                        {item.label}
-                    </a>
-                ))}
-            </nav>
+            <div style={this._getSecondAreaStyles()}>
+                <nav style={this._getMenuScrollContainerStyles()}>
+                    {menuItems.map((item: MenuItem, index: number): ReactNode => {
+                        const isLast: boolean = index === menuItems.length - 1;
+
+                        return (
+                            <a
+                                key={item.identifier}
+                                href={item.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={this._getMenuItemStyles(isLast)}
+                                onMouseEnter={(event: React.MouseEvent<HTMLAnchorElement>): void => {
+                                    event.currentTarget.style.backgroundColor = '#21262d';
+                                    event.currentTarget.style.color = '#ffffff';
+                                }}
+                                onMouseLeave={(event: React.MouseEvent<HTMLAnchorElement>): void => {
+                                    event.currentTarget.style.backgroundColor = 'transparent';
+                                    event.currentTarget.style.color = '#8b949e';
+                                }}
+                            >
+                                {item.label}
+                            </a>
+                        );
+                    })}
+                </nav>
+
+                {this._renderBadge()}
+            </div>
         );
     }
 
@@ -280,8 +287,8 @@ class SideNav extends Component<SideNavProps, SideNavState> {
         return {
             display: 'flex',
             justifyContent: 'center',
-            paddingTop: '24px',
-            borderTop: '1px solid #30363d'
+            paddingTop: '16px',
+            flexShrink: 0
         };
     }
 
