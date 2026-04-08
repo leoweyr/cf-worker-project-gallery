@@ -2,218 +2,86 @@ import { type GalleryMeta } from '../types/GalleryMeta';
 
 
 export class BodyInjector {
-    private static readonly _NAVIGATION_HEIGHT: number = 64;
-
     private readonly _galleryMeta: GalleryMeta;
     private readonly _uiGalleryBundleUrl: string;
-    private _hasInjectedMeta: boolean = false;
+    private readonly _targetUrl: string;
 
-    constructor(galleryMeta: GalleryMeta, uiGalleryBundleUrl: string) {
+    constructor(galleryMeta: GalleryMeta, uiGalleryBundleUrl: string, targetUrl: string) {
         this._galleryMeta = galleryMeta;
         this._uiGalleryBundleUrl = uiGalleryBundleUrl;
+        this._targetUrl = targetUrl;
     }
 
-    private _createViewportStyle(): string {
+    private _createGalleryFrameStyle(): string {
+        // Lock the outer document to prevent scrolling and ensure the gallery frame fills the viewport.
         return `<style>
-            html,
-            body {
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden !important;
                 width: 100vw !important;
-                height: calc(100vh - ${BodyInjector._NAVIGATION_HEIGHT}px) !important;
+                height: 100vh !important;
+            }
+            
+            #gallery-root {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 64px;
+                z-index: 2147483647;
+            }
+            
+            #gallery-content-frame {
+                position: fixed;
+                top: 64px;
+                left: 0;
+                width: 100vw;
+                height: calc(100vh - 64px);
+                border: none;
+                z-index: 1;
             }
         </style>`;
     }
 
-    private _createViewportShimScript(): string {
-        return `<script>(function () {
-            const resolveContainer = function () {
-                return document.getElementById('gallery-original-content');
-            };
-            
-            const synchronizeViewportSize = function () {
-                const container = resolveContainer();
-                
-                if (!container) {
-                    return;
-                }
-                
-                const viewportWidth = container.clientWidth + 'px';
-                const viewportHeight = container.clientHeight + 'px';
-                document.documentElement.style.width = viewportWidth;
-                document.documentElement.style.height = viewportHeight;
-                document.body.style.width = viewportWidth;
-                document.body.style.height = viewportHeight;
-            };
-            
-            const redefineViewportDimension = function (propertyName, valueResolver) {
-                try {
-                    Object.defineProperty(window, propertyName, {
-                        configurable: true,
-                        get: valueResolver
-                    });
-                } catch {
-                }
-            };
-            
-            redefineViewportDimension('innerWidth', function () {
-                const container = resolveContainer();
-                return container ? container.clientWidth : document.documentElement.clientWidth;
-            });
-            
-            redefineViewportDimension('innerHeight', function () {
-                const container = resolveContainer();
-                return container ? container.clientHeight : document.documentElement.clientHeight;
-            });
-            
-            window.addEventListener('resize', synchronizeViewportSize);
-            window.addEventListener('orientationchange', synchronizeViewportSize);
-            
-            if (typeof ResizeObserver !== 'undefined') {
-                const resizeObserver = new ResizeObserver(synchronizeViewportSize);
-                const observeContainer = function () {
-                    const container = resolveContainer();
-                    
-                    if (!container) {
-                        requestAnimationFrame(observeContainer);
-                        return;
-                    }
-                    
-                    resizeObserver.observe(container);
-                    synchronizeViewportSize();
-                };
-                
-                observeContainer();
-            } else {
-                requestAnimationFrame(synchronizeViewportSize);
-            }
-        })();</script>`;
-    }
+    public createIframeShellDocument(): string {
+        // Create a minimal HTML document that embeds the original content in an iframe.
+        // The iframe loads the original URL with a special query parameter to skip gallery injection.
+        // This ensures CSS viewport units in the original content reference the iframe dimensions.
+        const escapedMeta: string = JSON.stringify(this._galleryMeta).replace(/</g, '\\u003c');
+        const iframeSrc: string = this._targetUrl + (this._targetUrl.includes('?') ? '&' : '?') + '__gallery_raw=1';
 
-    private _createViewportCompatibilityScript(): string {
-        return `<script>(function () {
-            const viewportHeightValues = new Set(['100vh', '100dvh', '100svh', '100lvh']);
-            const viewportWidthValues = new Set(['100vw', '100dvw', '100svw', '100lvw']);
-            
-            const normalizeViewportValue = function (value) {
-                return value.trim().toLowerCase();
-            };
-            
-            const replaceViewportBasedStyles = function (htmlElement) {
-                const resolvedHeightValue = normalizeViewportValue(htmlElement.style.height);
-                const resolvedMinHeightValue = normalizeViewportValue(htmlElement.style.minHeight);
-                const resolvedMaxHeightValue = normalizeViewportValue(htmlElement.style.maxHeight);
-                const resolvedWidthValue = normalizeViewportValue(htmlElement.style.width);
-                const resolvedMinWidthValue = normalizeViewportValue(htmlElement.style.minWidth);
-                const resolvedMaxWidthValue = normalizeViewportValue(htmlElement.style.maxWidth);
-                
-                if (viewportHeightValues.has(resolvedHeightValue)) {
-                    htmlElement.style.height = '100%';
-                }
-                
-                if (viewportHeightValues.has(resolvedMinHeightValue)) {
-                    htmlElement.style.minHeight = '100%';
-                }
-                
-                if (viewportHeightValues.has(resolvedMaxHeightValue)) {
-                    htmlElement.style.maxHeight = '100%';
-                }
-                
-                if (viewportWidthValues.has(resolvedWidthValue)) {
-                    htmlElement.style.width = '100%';
-                }
-                
-                if (viewportWidthValues.has(resolvedMinWidthValue)) {
-                    htmlElement.style.minWidth = '100%';
-                }
-                
-                if (viewportWidthValues.has(resolvedMaxWidthValue)) {
-                    htmlElement.style.maxWidth = '100%';
-                }
-            };
-            
-            const normalizeViewportStyles = function (rootElement) {
-                replaceViewportBasedStyles(rootElement);
-                const childElements = rootElement.querySelectorAll('*');
-                
-                for (const childElement of childElements) {
-                    if (!(childElement instanceof HTMLElement)) {
-                        continue;
-                    }
-                    replaceViewportBasedStyles(childElement);
-                }
-            };
-            
-            const resolveContainer = function () {
-                return document.getElementById('gallery-original-content');
-            };
-            
-            const observeContainer = function () {
-                const container = resolveContainer();
-                
-                if (!container) {
-                    requestAnimationFrame(observeContainer);
-                    return;
-                }
-                
-                normalizeViewportStyles(container);
-                
-                const mutationObserver = new MutationObserver(function (mutationRecords) {
-                    for (const mutationRecord of mutationRecords) {
-                        if (mutationRecord.type === 'attributes') {
-                            if (mutationRecord.target instanceof HTMLElement) {
-                                replaceViewportBasedStyles(mutationRecord.target);
-                            }
-                            continue;
-                        }
-                        
-                        if (mutationRecord.type === 'childList') {
-                            for (const addedNode of mutationRecord.addedNodes) {
-                                if (!(addedNode instanceof HTMLElement)) {
-                                    continue;
-                                }
-                                
-                                normalizeViewportStyles(addedNode);
-                            }
-                        }
-                    }
-                });
-                
-                mutationObserver.observe(container, {
-                    subtree: true,
-                    childList: true,
-                    attributes: true,
-                    attributeFilter: ['style']
-                });
-            };
-            
-            observeContainer();
-        })();</script>`;
+        return `<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${this._galleryMeta.title}</title>
+    <link rel="icon" href="${this._galleryMeta.iconUrl}">
+    ${this._createGalleryFrameStyle()}
+</head>
+<body>
+    <script>window.__GALLERY_META__ = ${escapedMeta};</script>
+    <div id="gallery-root"></div>
+    <iframe id="gallery-content-frame" src="${iframeSrc}"></iframe>
+    <script defer src="${this._uiGalleryBundleUrl}"></script>
+</body>
+</html>`;
     }
 
     public createBodyHandler(): HTMLRewriterElementContentHandlers {
         return {
-            element: (element: Element): void => {
-
-                if (!this._hasInjectedMeta) {
-                    const metaScript: string = `<script>window.__GALLERY_META__ = ${JSON.stringify(this._galleryMeta)};</script>`;
-                    const mountPoint: string = '<div id="gallery-root" style="position: relative; z-index: 2147483647;"></div>';
-                    const viewportStyle: string = this._createViewportStyle();
-                    const viewportShimScript: string = this._createViewportShimScript();
-                    const viewportCompatibilityScript: string = this._createViewportCompatibilityScript();
-                    const uiScript: string = `<script defer src="${this._uiGalleryBundleUrl}"></script>`;
-                    const bodyLockScript: string = '<script>document.documentElement.style.margin="0";document.body.style.margin="0";document.body.style.overflow="hidden";</script>';
-                    const wrapperOpen: string = `<div id="gallery-original-content" style="position: fixed; top: ${BodyInjector._NAVIGATION_HEIGHT}px; left: 0; right: 0; bottom: 0; overflow: auto; box-sizing: border-box; z-index: 1; transform: translateZ(0);">`;
-
-                    element.prepend(metaScript + mountPoint + viewportStyle + viewportShimScript + viewportCompatibilityScript + uiScript + bodyLockScript + wrapperOpen, { html: true });
-                    this._hasInjectedMeta = true;
-                }
+            element: (_element: Element): void => {
+                // This handler is no longer used when iframe mode is active.
+                // Kept for backward compatibility with non-iframe mode.
             }
         };
     }
 
     public createBodyEndHandler(): HTMLRewriterElementContentHandlers {
         return {
-            element: (element: Element): void => {
-                element.append('</div>', { html: true });
+            element: (_element: Element): void => {
+                // This handler is no longer used when iframe mode is active.
             }
         };
     }

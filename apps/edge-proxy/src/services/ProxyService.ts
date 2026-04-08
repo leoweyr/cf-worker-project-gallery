@@ -290,13 +290,18 @@ export class ProxyService {
         const galleryMeta: GalleryMeta = await this._extractMetadata(originResponse, targetUrl);
         const uiGalleryBundleUrl: string = this._buildUiGalleryBundleProxyUrl();
 
-        const bodyInjector: BodyInjector = new BodyInjector(galleryMeta, uiGalleryBundleUrl);
+        const bodyInjector: BodyInjector = new BodyInjector(galleryMeta, uiGalleryBundleUrl, targetUrl);
 
-        const injectionRewriter: HTMLRewriter = new HTMLRewriter()
-            .on('body', bodyInjector.createBodyHandler())
-            .on('body', bodyInjector.createBodyEndHandler());
+        // Use iframe shell mode to ensure CSS viewport units in the original content
+        // reference the iframe dimensions instead of the browser viewport.
+        const iframeShellDocument: string = bodyInjector.createIframeShellDocument();
 
-        return injectionRewriter.transform(originResponse);
+        return new Response(iframeShellDocument, {
+            status: 200,
+            headers: {
+                'Content-Type': 'text/html; charset=utf-8'
+            }
+        });
     }
 
     private async _extractMetadata(originResponse: Response, targetUrl: string): Promise<GalleryMeta> {
@@ -355,6 +360,21 @@ export class ProxyService {
         });
     }
 
+    private _createRawContentResponse(originResponse: Response): Response {
+        // Return the original HTML content without gallery injection.
+        // This is used when the content is loaded inside the gallery iframe.
+        const newHeaders: Headers = new Headers(originResponse.headers);
+        newHeaders.delete('Content-Security-Policy');
+        newHeaders.delete('X-Frame-Options');
+        newHeaders.set('X-Gallery-Raw', 'true');
+
+        return new Response(originResponse.body, {
+            status: originResponse.status,
+            statusText: originResponse.statusText,
+            headers: newHeaders
+        });
+    }
+
     private _createErrorResponse(message: string, status: number): Response {
         return new Response(JSON.stringify({
             error: message
@@ -389,6 +409,14 @@ export class ProxyService {
 
         if (!contentType.includes('text/html')) {
             return originResponse;
+        }
+
+        // Check if this is a raw content request from the gallery iframe.
+        // When __gallery_raw=1 is present, return the original HTML without gallery injection.
+        const isRawContentRequest: boolean = requestUrl.searchParams.get('__gallery_raw') === '1';
+
+        if (isRawContentRequest) {
+            return this._createRawContentResponse(originResponse);
         }
 
         const transformedResponse: Response = await this._transformHtmlResponse(
