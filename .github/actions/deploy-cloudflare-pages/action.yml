@@ -48,6 +48,78 @@ runs:
             run: pnpm install --frozen-lockfile
             shell: bash
 
+        -   name: 🛠️ Sync UI Gallery GitHub Token
+            if: ${{ inputs.github_token != '' }}
+            shell: bash
+            env:
+                cloudflare_api_token: ${{ inputs.cloudflare_api_token }}
+                cloudflare_account_id: ${{ inputs.cloudflare_account_id }}
+                pages_project: ${{ inputs.pages_project }}
+                ui_gallery_github_token: ${{ inputs.github_token }}
+            run: |
+                node <<'NODE'
+                (async () => {
+                    const cloudflareApiToken = process.env.cloudflare_api_token || '';
+                    const cloudflareAccountId = process.env.cloudflare_account_id || '';
+                    const pagesProject = process.env.pages_project || '';
+                    const uiGalleryGitHubToken = process.env.ui_gallery_github_token || '';
+                    const projectApiUrl = `https://api.cloudflare.com/client/v4/accounts/${cloudflareAccountId}/pages/projects/${pagesProject}`;
+                    const requestHeaders = {
+                        Authorization: `Bearer ${cloudflareApiToken}`,
+                        'Content-Type': 'application/json'
+                    };
+
+                    const patchProjectResponse = await fetch(projectApiUrl, {
+                        method: 'PATCH',
+                        headers: requestHeaders,
+                        body: JSON.stringify({
+                            deployment_configs: {
+                                preview: {
+                                    env_vars: {
+                                        UI_GALLERY_GITHUB_TOKEN: {
+                                            type: 'secret_text',
+                                            value: uiGalleryGitHubToken
+                                        }
+                                    }
+                                },
+                                production: {
+                                    env_vars: {
+                                        UI_GALLERY_GITHUB_TOKEN: {
+                                            type: 'secret_text',
+                                            value: uiGalleryGitHubToken
+                                        }
+                                    }
+                                }
+                            }
+                        })
+                    });
+
+                    const patchProjectPayload = await patchProjectResponse.json().catch(() => null);
+
+                    if (!patchProjectResponse.ok || !patchProjectPayload || patchProjectPayload.success !== true) {
+                        console.error('❌ Failed to sync UI_GALLERY_GITHUB_TOKEN to Cloudflare Pages settings.');
+
+                        if (patchProjectPayload) {
+                            console.error(JSON.stringify(patchProjectPayload));
+                        }
+
+                        process.exit(1);
+                    }
+
+                    console.log('✅ Synced UI_GALLERY_GITHUB_TOKEN to Cloudflare Pages Preview and Production settings.');
+                })().catch((error) => {
+                    console.error('❌ Unexpected error while syncing UI_GALLERY_GITHUB_TOKEN.');
+
+                    if (error instanceof Error) {
+                        console.error(error.message);
+                    } else {
+                        console.error(String(error));
+                    }
+
+                    process.exit(1);
+                });
+                NODE
+
         -   name: 📝 Generate UI Gallery Bundle
             run: pnpm --filter @cf-worker-project-gallery/ui-gallery build
             shell: bash
