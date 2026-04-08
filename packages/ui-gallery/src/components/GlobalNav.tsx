@@ -27,7 +27,7 @@ class GlobalNav extends Component<GlobalNavProps, GlobalNavState> {
     private static readonly EDGE_PADDING: number = 24;
     private static readonly GIT_INFO_BADGE_SPACING: number = 16;
     private static readonly TITLE_MENU_SPACING: number = 128;
-    private static readonly MENU_RIGHT_BOUNDARY_SPACING: number = 128;
+    private static readonly MENU_RIGHT_BOUNDARY_SPACING: number = 32;
     private static readonly REPO_URL: string = 'https://github.com/leoweyr/cf-worker-project-gallery';
     private static readonly HAMBURGER_ICON_SVG: string = `<svg viewBox="0 0 24 24" width="24" height="24" fill="#f0f6fc"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>`;
 

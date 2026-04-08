@@ -264,6 +264,14 @@ class NavMenu extends Component<NavMenuProperties, NavMenuState> {
         };
     }
 
+    private _getOverflowIconStyles(): CSSProperties {
+        return {
+            width: '18px',
+            height: '18px',
+            display: 'block'
+        };
+    }
+
     private _getDropdownStyles(): CSSProperties {
         return {
             position: 'absolute',
@@ -314,7 +322,16 @@ class NavMenu extends Component<NavMenuProperties, NavMenuState> {
                         event.currentTarget.style.color = '#8b949e';
                     }}
                 >
-                    •••
+                    <svg
+                        viewBox="0 0 24 24"
+                        style={this._getOverflowIconStyles()}
+                        aria-hidden="true"
+                    >
+                        <path
+                            d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
+                            fill="currentColor"
+                        />
+                    </svg>
                 </button>
 
                 {isDropdownOpen && (
