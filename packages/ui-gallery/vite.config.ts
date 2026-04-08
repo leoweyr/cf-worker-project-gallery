@@ -14,6 +14,10 @@ const browserProcessShim: string = JSON.stringify({
 
 
 export default defineConfig({
+    envPrefix: [
+        'VITE_',
+        'UI_GALLERY_'
+    ],
     plugins: [
         ...react(),
         ...cssInjectedByJsPlugin()
