@@ -158,6 +158,7 @@ class GlobalNav extends Component<GlobalNavProps, GlobalNavState> {
         }), (): void => {
             // Re-measure after rendering desktop nav.
             this._measureAndUpdateView();
+            this._restoreContentFrameFocus();
         });
     };
 
@@ -185,6 +186,22 @@ class GlobalNav extends Component<GlobalNavProps, GlobalNavState> {
             contentFrame.style.pointerEvents = 'auto';
             contentFrame.setAttribute('tabindex', '0');
         }
+    }
+
+    private _restoreContentFrameFocus(): void {
+        const contentFrame: HTMLElement | null = document.getElementById('gallery-original-content');
+
+        if (!contentFrame) {
+            return;
+        }
+
+        requestAnimationFrame((): void => {
+            contentFrame.focus();
+
+            if (contentFrame instanceof HTMLIFrameElement && contentFrame.contentWindow) {
+                contentFrame.contentWindow.focus();
+            }
+        });
     }
 
     private _getNavStyles(): CSSProperties {
