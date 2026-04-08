@@ -17,6 +17,8 @@ class App extends Component<AppProperties, object> {
             <GlobalNav
                 iconUrl={galleryMeta?.iconUrl || ''}
                 title={galleryMeta?.title || 'Project Gallery'}
+                gitUrl={galleryMeta?.gitUrl || ''}
+                menuItems={galleryMeta?.menuItems || []}
             />
         );
     }

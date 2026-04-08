@@ -309,17 +309,52 @@ export class ProxyService {
 
         const metadataRewriter: HTMLRewriter = new HTMLRewriter()
             .on('title', metadataExtractor.createTitleHandler())
-            .on('link', metadataExtractor.createLinkHandler());
+            .on('link', metadataExtractor.createLinkHandler())
+            .on('meta', metadataExtractor.createMetaHandler());
 
         const clonedResponse: Response = originResponse.clone();
         await metadataRewriter.transform(clonedResponse).text();
 
         const rawMeta: GalleryMeta = metadataExtractor.getGalleryMeta();
 
+        const normalizedMenuItems: Array<{
+            identifier: string;
+            label: string;
+            url: string;
+        }> = [];
+
+        const menuItemsCandidate: unknown = (rawMeta as { menuItems?: unknown }).menuItems;
+
+        if (Array.isArray(menuItemsCandidate)) {
+            for (const menuItemCandidate of menuItemsCandidate) {
+                const candidate: {
+                    identifier?: unknown;
+                    label?: unknown;
+                    url?: unknown;
+                } = menuItemCandidate as {
+                    identifier?: unknown;
+                    label?: unknown;
+                    url?: unknown;
+                };
+
+                if (typeof candidate.identifier !== 'string' || typeof candidate.label !== 'string' || typeof candidate.url !== 'string') {
+                    continue;
+                }
+
+                normalizedMenuItems.push({
+                    identifier: candidate.identifier,
+                    label: candidate.label,
+                    url: UrlResolver.resolve(targetUrl, candidate.url)
+                });
+            }
+        }
+
         return {
             title: rawMeta.title || 'Untitled Project',
-            iconUrl: rawMeta.iconUrl ? UrlResolver.resolve(targetUrl, rawMeta.iconUrl) : ''
-        };
+            iconUrl: rawMeta.iconUrl ? UrlResolver.resolve(targetUrl, rawMeta.iconUrl) : '',
+            gitUrl: rawMeta.gitUrl || '',
+            menuItems: normalizedMenuItems
+        } as GalleryMeta;
     }
 
     private _resolveUiGalleryBundleUrl(): string {

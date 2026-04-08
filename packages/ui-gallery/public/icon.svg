@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+    <!-- Blueprint grid pattern definition. -->
+    <defs>
+        <pattern id="blueprintGrid" width="4" height="4" patternUnits="userSpaceOnUse">
+            <rect width="4" height="4" fill="#E8EAED"/>
+            <path d="M4 0L4 4M0 4L4 4" stroke="#D0D4D8" stroke-width="0.5"/>
+        </pattern>
+    </defs>
+
+    <!-- Orange cloud (Cloudflare-style, solid fill, flat bottom). -->
+    <path
+        d="M26 92C15 92 6 83 6 72c0-7.6 4.6-14.2 11.1-16.9-.1-.7-.1-1.4-.1-2.1 0-17.7 14.3-32 32-32 10.8 0 20.2 6.5 24.5 15.2 2.4-.8 4.9-1.2 7.5-1.2 13.3 0 24 10.7 24 24 0 2.7-.4 5.2-1.2 7.6C108.2 70.3 111 75.8 111 82c0 5.5-4.5 10-10 10H26z"
+        fill="#F6821F"
+    />
+
+    <!-- Picture frame (outer border). -->
+    <rect x="68" y="62" width="52" height="42" rx="3" fill="#F5F5F5" stroke="#BDBDBD" stroke-width="2"/>
+
+    <!-- Picture frame title bar (thicker top border for traffic lights). -->
+    <rect x="70" y="64" width="48" height="8" rx="1" fill="#E0E0E0"/>
+
+    <!-- Mac traffic lights. -->
+    <circle cx="76" cy="68" r="2" fill="#FF5F57"/>
+    <circle cx="83" cy="68" r="2" fill="#FFBD2E"/>
+    <circle cx="90" cy="68" r="2" fill="#28C840"/>
+
+    <!-- Picture frame inner mat with blueprint grid. -->
+    <rect x="72" y="74" width="44" height="26" rx="1" fill="url(#blueprintGrid)"/>
+
+    <!-- Folder icon (Mac style - back with tab). -->
+    <path
+        d="M82 80c0-1.1.9-2 2-2h5c.5 0 1 .2 1.4.6l2.1 1.9h9.5c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2H84c-1.1 0-2-.9-2-2v-10.5z"
+        fill="#F6821F"
+    />
+    
+    <!-- Folder icon (Mac style - front face). -->
+    <path
+        d="M80 83c0-1.1.9-2 2-2h24c1.1 0 2 .9 2 2v9c0 1.1-.9 2-2 2H82c-1.1 0-2-.9-2-2v-9z"
+        fill="#E5721B"
+    />
+    
+    <!-- Folder highlight. -->
+    <path
+        d="M80 83c0-1.1.9-2 2-2h24c1.1 0 2 .9 2 2v1.5H80v-1.5z"
+        fill="#FAAD3F"
+    />
+</svg>

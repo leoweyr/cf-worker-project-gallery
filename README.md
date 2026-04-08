@@ -1,6 +1,4 @@
-# Cloudflare Worker Project Gallery
-
-A Cloudflare Worker proxy that 'frames' your frontend projects into a unified gallery. Automatically injects brand assets, repository links, docs, and contact info at the edge—saving you from building repetitive navigation UI for every site.
+![cf-worker-project-gallery](https://socialify.git.ci/leoweyr/cf-worker-project-gallery/image?description=1&font=Rokkitt&forks=1&issues=1&logo=https%3A%2F%2Fraw.githubusercontent.com%2Fleoweyr%2Fcf-worker-project-gallery%2Frefs%2Fheads%2Fdevelop%2Fpackages%2Fui-gallery%2Fpublic%2Ficon.svg&name=1&owner=1&pattern=Plus&pulls=1&stargazers=1&theme=Light)
 
 ## 🚀 Deployment
 
@@ -8,10 +6,11 @@ A Cloudflare Worker proxy that 'frames' your frontend projects into a unified ga
 
 2. Configure GitHub Actions secrets and variables.
 
-   | Secret                  | Description                                                              | How to Obtain                                                                                                                                                                                                                                                                                                   |
-   |-------------------------|--------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-   | `CLOUDFLARE_API_TOKEN`  | Cloudflare API token used by GitHub Actions to deploy Workers and Pages. | 1. Open Cloudflare Dashboard and go to `My Profile -> API Tokens`.<br/>2. Click `Create Token` and select `Create Custom Token`.<br/>3. Grant account-level permissions: `Cloudflare Pages:Edit`, `Workers Scripts:Edit`, and `Workers Routes:Edit`.<br/>4. In `Account Resources`, include the target account. |
-   | `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account identifier used by deployment actions.                | 1. Open Cloudflare Dashboard in your browser.<br/>2. Copy the account ID directly from the URL path, for example: `https://dash.cloudflare.com/<ACCOUNT_ID>/home/overview`.                                                                                                                                     |
+   | Secret                    | Description                                                                                                                          | How to Obtain                                                                                                                                                                                                                                                                                                   |
+   |---------------------------|--------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+   | `CLOUDFLARE_API_TOKEN`    | Cloudflare API token used by GitHub Actions to deploy Workers and Pages.                                                             | 1. Open Cloudflare Dashboard and go to `My Profile -> API Tokens`.<br/>2. Click `Create Token` and select `Create Custom Token`.<br/>3. Grant account-level permissions: `Cloudflare Pages:Edit`, `Workers Scripts:Edit`, and `Workers Routes:Edit`.<br/>4. In `Account Resources`, include the target account. |
+   | `CLOUDFLARE_ACCOUNT_ID`   | Cloudflare account identifier used by deployment actions.                                                                            | 1. Open Cloudflare Dashboard in your browser.<br/>2. Copy the account ID directly from the URL path, for example: `https://dash.cloudflare.com/<ACCOUNT_ID>/home/overview`.                                                                                                                                     |
+   | `UI_GALLERY_GITHUB_TOKEN` | Token used by `ui-gallery` to fetch and parse GitHub repository information (repository name, stars, and forks) for the Git Info UI. | 1. Create a GitHub personal access token with read access to target repositories.<br/>2. Add it as repository secret `UI_GALLERY_GITHUB_TOKEN` in `Settings -> Secrets and variables -> Actions`.                                                                                                               |
 
    | Variable                         | Description                                                                                                           | How to Obtain                                                                                                                                                                                                                                                                                                      |
    |----------------------------------|-----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -45,3 +44,14 @@ A Cloudflare Worker proxy that 'frames' your frontend projects into a unified ga
 
     - Open `Actions` and run `Deploy Cloudflare`.
     - Must use branch `master` for deployment.
+
+## 🧭 Metadata Controls
+
+Configure metadata in each target frontend project's `index.html` (`<head>`), because these metadata values directly affect project gallery global navigation bar UI behavior.
+
+| Metadata Rule                                                | Global Navigation Bar Behavior                               |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `<title>...</title>`                                         | Controls the title text shown.                               |
+| `<link rel="icon" href="...">`                               | Controls the logo shown.                                     |
+| `<meta name="git" content="https://github.com/<owner>/<repo>.git">` | Enables Git Info UI and displays repository name, stars, and forks. |
+| `<meta name="menu-<id>" content="<label>, <url>">`           | Adds a primary menu item. Multiple menu items are displayed in the order they appear in the HTML source.<br/> `<id>` is a unique identifier.<br/>`<label>` is the displayed text.<br/>`<url>` is the link destination. |

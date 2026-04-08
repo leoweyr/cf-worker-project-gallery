@@ -32,7 +32,7 @@ export class BodyInjector {
                 z-index: 2147483647;
             }
             
-            #gallery-content-frame {
+            #gallery-original-content {
                 position: fixed;
                 top: 64px;
                 left: 0;
@@ -44,12 +44,62 @@ export class BodyInjector {
         </style>`;
     }
 
+    private _createKeyboardFocusScript(): string {
+        // Keep keyboard focus on the proxied content frame so site shortcuts remain responsive.
+        return `<script>(function () {
+            const resolveContentFrame = function () {
+                return document.getElementById('gallery-original-content');
+            };
+
+            const focusContentFrame = function () {
+                const contentFrame = resolveContentFrame();
+
+                if (!(contentFrame instanceof HTMLIFrameElement)) {
+                    return;
+                }
+
+                contentFrame.focus();
+
+                if (contentFrame.contentWindow) {
+                    contentFrame.contentWindow.focus();
+                }
+            };
+
+            const initializeKeyboardFocus = function () {
+                const contentFrame = resolveContentFrame();
+
+                if (!(contentFrame instanceof HTMLIFrameElement)) {
+                    requestAnimationFrame(initializeKeyboardFocus);
+                    return;
+                }
+
+                document.addEventListener('pointerdown', function (event) {
+                    const navRoot = document.getElementById('gallery-root');
+
+                    if (navRoot && navRoot.contains(event.target)) {
+                        return;
+                    }
+
+                    focusContentFrame();
+                }, true);
+
+                contentFrame.addEventListener('load', focusContentFrame);
+                window.addEventListener('load', focusContentFrame);
+                window.addEventListener('focus', focusContentFrame);
+                focusContentFrame();
+            };
+
+            initializeKeyboardFocus();
+        })();</script>`;
+    }
+
     public createIframeShellDocument(): string {
         // Create a minimal HTML document that embeds the original content in an iframe.
         // The iframe loads the original URL with a special query parameter to skip gallery injection.
         // This ensures CSS viewport units in the original content reference the iframe dimensions.
         const escapedMeta: string = JSON.stringify(this._galleryMeta).replace(/</g, '\\u003c');
         const iframeSrc: string = this._targetUrl + (this._targetUrl.includes('?') ? '&' : '?') + '__gallery_raw=1';
+        const keyboardFocusScript: string = this._createKeyboardFocusScript();
 
         return `<!DOCTYPE html>
 <html>
@@ -63,7 +113,8 @@ export class BodyInjector {
 <body>
     <script>window.__GALLERY_META__ = ${escapedMeta};</script>
     <div id="gallery-root"></div>
-    <iframe id="gallery-content-frame" src="${iframeSrc}"></iframe>
+    <iframe id="gallery-original-content" src="${iframeSrc}" tabindex="0" title="Project Content"></iframe>
+    ${keyboardFocusScript}
     <script defer src="${this._uiGalleryBundleUrl}"></script>
 </body>
 </html>`;

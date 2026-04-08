@@ -1,13 +1,63 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cloudflare Worker Project Gallery</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/index.tsx"></script>
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Cloudflare Worker Project Gallery</title>
+        <meta name="git" content="https://github.com/leoweyr/cf-worker-project-gallery.git"/>
+        <meta name="menu-docs" content="Docs, https://github.com/leoweyr/cf-worker-project-gallery#readme"/>
+        <meta name="menu-issues" content="Issues, https://github.com/leoweyr/cf-worker-project-gallery/issues"/>
+        <meta name="menu-cloudflare-workers-docs" content="Cloudflare Workers Docs, https://developers.cloudflare.com/workers"/>
+        <meta name="menu-cloudflare-pages-docs" content="Cloudflare Pages Docs, https://developers.cloudflare.com/pages"/>
+        <style>
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+            }
+
+            #gallery-original-content {
+                position: fixed;
+                top: 64px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                overflow: auto;
+                padding: 24px;
+                box-sizing: border-box;
+                background: #f6f8fa;
+                color: #24292f;
+            }
+        </style>
+    </head>
+    <body>
+        <script>
+            window.__GALLERY_META__ = {
+                title: 'Cloudflare Worker Project Gallery',
+                iconUrl: '/icon.svg',
+                gitUrl: 'https://github.com/leoweyr/cf-worker-project-gallery.git',
+                menuItems: [
+                    { identifier: 'docs', label: 'Docs', url: 'https://github.com/leoweyr/cf-worker-project-gallery#readme' },
+                    { identifier: 'issues', label: 'Issues', url: 'https://github.com/leoweyr/cf-worker-project-gallery/issues' },
+                    { identifier: 'cloudflare-workers-docs', label: 'Cloudflare Workers Docs', url: 'https://developers.cloudflare.com/workers' },
+                    { identifier: 'cloudflare-pages-docs', label: 'Cloudflare Pages Docs', url: 'https://developers.cloudflare.com/pages' },
+                ]
+            };
+        </script>
+        <div id="gallery-root"></div>
+        <div id="gallery-original-content">
+            <h1>Injected Page Content</h1>
+            <p>
+                This page is only a local injection harness for ui-gallery development.
+                The edge-proxy runtime only consumes the built <code>global-ui-bundle.js</code>
+                from library build output.
+            </p>
+        </div>
+        <script type="module" src="/src/index.tsx"></script>
+    </body>
 </html>

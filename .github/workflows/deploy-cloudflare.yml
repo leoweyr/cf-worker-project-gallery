@@ -61,11 +61,12 @@ jobs:
                 id: deploy_pages
                 uses: ./.github/actions/deploy-cloudflare-pages
                 with:
+                    deployment_environment: ${{ needs.resolve_target.outputs.deployment_environment }}
                     pages_branch: ${{ needs.resolve_target.outputs.pages_branch }}
                     pages_project: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
                     cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                     cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                    github_token: ${{ github.token }}
+                    github_token: ${{ secrets.UI_GALLERY_GITHUB_TOKEN }}
 
     deploy_workers:
         runs-on: ubuntu-latest
