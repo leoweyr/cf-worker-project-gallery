@@ -10,6 +10,8 @@ export interface GlobalNavProperties {
 class GlobalNav extends Component<GlobalNavProperties, {}> {
     private static readonly NAV_HEIGHT: number = 64;
     private static readonly ICON_TITLE_SPACING: number = 16;
+    private static readonly EDGE_PADDING: number = 24;
+    private static readonly REPO_URL: string = 'https://github.com/leoweyr/cf-worker-project-gallery';
 
     public render(): ReactNode {
         return (
@@ -17,6 +19,8 @@ class GlobalNav extends Component<GlobalNavProperties, {}> {
                 <div style={this._getContainerStyles()}>
                     {this._renderIcon()}
                     {this._renderTitle()}
+                    <div style={{ flex: 1 }} />
+                    {this._renderBadge()}
                 </div>
             </nav>
         );
@@ -41,9 +45,7 @@ class GlobalNav extends Component<GlobalNavProperties, {}> {
             display: 'flex',
             alignItems: 'center',
             height: '100%',
-            maxWidth: '1280px',
-            margin: '0 auto',
-            padding: '0 24px'
+            padding: `0 ${GlobalNav.EDGE_PADDING}px`
         };
     }
 
@@ -102,6 +104,55 @@ class GlobalNav extends Component<GlobalNavProperties, {}> {
 
         return (
             <span style={this._getTitleStyles()}>{title}</span>
+        );
+    }
+
+    private _getBadgeStyles(): CSSProperties {
+        return {
+            display: 'inline-flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '6px 12px',
+            backgroundColor: '#ffffff',
+            border: '2px solid #000000',
+            borderRadius: '4px',
+            textDecoration: 'none',
+            transform: 'rotate(-2deg)',
+            boxShadow: '2px 2px 0px #000000',
+            cursor: 'pointer',
+            transition: 'transform 0.1s ease'
+        };
+    }
+
+    private _getBadgeLineStyles(isSecondLine: boolean): CSSProperties {
+        return {
+            color: '#000000',
+            fontSize: isSecondLine ? '10px' : '8px',
+            fontWeight: isSecondLine ? 700 : 400,
+            lineHeight: '1.2',
+            letterSpacing: '0.02em',
+            textTransform: 'uppercase' as const,
+            whiteSpace: 'nowrap' as const
+        };
+    }
+
+    private _renderBadge(): ReactNode {
+        return (
+            <a
+                href={GlobalNav.REPO_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={this._getBadgeStyles()}
+                onMouseEnter={(event: React.MouseEvent<HTMLAnchorElement>): void => {
+                    event.currentTarget.style.transform = 'rotate(0deg) scale(1.05)';
+                }}
+                onMouseLeave={(event: React.MouseEvent<HTMLAnchorElement>): void => {
+                    event.currentTarget.style.transform = 'rotate(-2deg)';
+                }}
+            >
+                <span style={this._getBadgeLineStyles(false)}>Injected Top Navigation Bar Powered by</span>
+                <span style={this._getBadgeLineStyles(true)}>cf-worker-project-gallery</span>
+            </a>
         );
     }
 }
