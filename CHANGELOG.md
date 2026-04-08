@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+# [0.2.0](https://github.com/leoweyr/cf-worker-project-gallery/compare/v0.1.0...v0.2.0) (2026-04-08)
+### Bug Fixes
+
+* **edge-proxy:** restore proxied site keyboard shortcuts in iframe code ([f0628bc](https://github.com/leoweyr/cf-worker-project-gallery/commit/f0628bc7c5713da8363dddc83b4c1bf766ba2cf3)) [@leoweyr](https://github.com/leoweyr)
+
+
+### Features
+
+* **ui-gallery:** add local injection harness ([a0d6fcc](https://github.com/leoweyr/cf-worker-project-gallery/commit/a0d6fccdfddc8eae482bebed1a4a06ce167ae37d)) [@leoweyr](https://github.com/leoweyr)
+* **ui-gallery:** set global nav icon-title spacing to 16px ([11727f4](https://github.com/leoweyr/cf-worker-project-gallery/commit/11727f4cde61c592f41110663c30d2ca4e46c379)) [@leoweyr](https://github.com/leoweyr)
+* **ui-gallery:** add powered-by badge to global nav ([c702e02](https://github.com/leoweyr/cf-worker-project-gallery/commit/c702e0221340063e0b0e6f69847129f94eeeb1f5)) [@leoweyr](https://github.com/leoweyr)
+* add git metadata extraction and GitHub info UI ([f024ca8](https://github.com/leoweyr/cf-worker-project-gallery/commit/f024ca89caaf2ec7d818a27dca48dcb0483a1f6c)) [@leoweyr](https://github.com/leoweyr)
+* **ui-gallery:** add primary menu navigation with overflow dropdown ([492674d](https://github.com/leoweyr/cf-worker-project-gallery/commit/492674d0e86b49ae50953d7e2377983651801560)) [@leoweyr](https://github.com/leoweyr)
+* **ui-gallery:** add responsive sidebar navigation for mobile viewport ([50ebb06](https://github.com/leoweyr/cf-worker-project-gallery/commit/50ebb069db2e512847b56dd6aede44eb6fae328a)) [@leoweyr](https://github.com/leoweyr)
+* **ui-gallery:** use hamburger icon for primary menu overflow trigger ([7e9b2fc](https://github.com/leoweyr/cf-worker-project-gallery/commit/7e9b2fcef72f419bfb8bae65197705daa449d63f)) [@leoweyr](https://github.com/leoweyr)
+* **ui-gallery:** add slide-in animation for mobile sidebar opening ([5c14f4d](https://github.com/leoweyr/cf-worker-project-gallery/commit/5c14f4db315a1ccc27f0c276a7b61a5f693d3d16)) [@leoweyr](https://github.com/leoweyr)
+* **ui-gallery:** redesign sidebar ([a5190f2](https://github.com/leoweyr/cf-worker-project-gallery/commit/a5190f2174e38b6bb25fbe7e98354f954e544bf3)) [@leoweyr](https://github.com/leoweyr)
+
+
+### DevOps
+
+* sync Cloudflare Pages production branch for production deploys ([264e644](https://github.com/leoweyr/cf-worker-project-gallery/commit/264e64488239bcbb9f08ebee59334dd869c072a2)) [@leoweyr](https://github.com/leoweyr)
+* **ui-gallery:** expose UI gallery token in Vite env ([d941f4d](https://github.com/leoweyr/cf-worker-project-gallery/commit/d941f4d417dea5a0c4860af638bebcd3da6c15d9)) [@leoweyr](https://github.com/leoweyr)
+* auto sync `UI_GALLERY_GITHUB_TOKEN` to Cloudflare Pages ([dbb5684](https://github.com/leoweyr/cf-worker-project-gallery/commit/dbb56840a957c5e9054c449cdfbfc570dce92020)) [@leoweyr](https://github.com/leoweyr)
+
+
+### Documentation
+
+* add project banner ([042471c](https://github.com/leoweyr/cf-worker-project-gallery/commit/042471c92b3aa6d8fb8f435fce7a8eb574e9e581)) [@leoweyr](https://github.com/leoweyr)
+
+
+### Miscellaneous Tasks
+
+* add icon ([74ba50c](https://github.com/leoweyr/cf-worker-project-gallery/commit/74ba50cd858fe49d850b35935d122bef767f4764)) [@leoweyr](https://github.com/leoweyr)
+
+
+
 # [0.1.0] (2026-04-08)
 ### Bug Fixes
 
