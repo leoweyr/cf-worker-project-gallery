@@ -1,0 +1,61 @@
+name: Deploy Cloudflare Pages
+description: Build and deploy UI gallery to Cloudflare Pages.
+
+
+inputs:
+    pages_branch:
+        description: Cloudflare pages branch.
+        required: true
+    pages_project:
+        description: Cloudflare pages project name.
+        required: true
+    cloudflare_api_token:
+        description: Cloudflare API token.
+        required: true
+    cloudflare_account_id:
+        description: Cloudflare account ID.
+        required: true
+    github_token:
+        description: GitHub token for deployment metadata.
+        required: true
+
+
+outputs:
+    pages_url:
+        description: Deployed Pages URL
+        value: ${{ steps.deploy_pages.outputs.url }}
+
+
+runs:
+    using: composite
+    steps:
+        -   name: 📂 Checkout Repository
+            uses: actions/checkout@v4
+
+        -   name: 🛠️ Config PNPM
+            uses: pnpm/action-setup@v4
+
+        -   name: 🛠️ Config Node.js
+            uses: actions/setup-node@v4
+            with:
+                node-version: 20
+                cache: pnpm
+
+        -   name: 📦 Install Dependencies
+            run: pnpm install --frozen-lockfile
+            shell: bash
+
+        -   name: 📝 Generate UI Gallery Bundle
+            run: pnpm --filter @cf-worker-project-gallery/ui-gallery build
+            shell: bash
+
+        -   name: 🚀 Deploy Pages
+            id: deploy_pages
+            uses: cloudflare/pages-action@v1
+            with:
+                apiToken: ${{ inputs.cloudflare_api_token }}
+                accountId: ${{ inputs.cloudflare_account_id }}
+                projectName: ${{ inputs.pages_project }}
+                directory: packages/ui-gallery/dist
+                branch: ${{ inputs.pages_branch }}
+                gitHubToken: ${{ inputs.github_token }}

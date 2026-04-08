@@ -1,10 +1,23 @@
 import { Component, type ReactNode } from 'react';
 
+import GlobalNav from './components/GlobalNav';
+import type { GalleryMeta } from './GalleryMeta';
 
-class App extends Component {
+
+export interface AppProperties {
+    galleryMeta?: GalleryMeta;
+}
+
+
+class App extends Component<AppProperties, object> {
     public render(): ReactNode {
+        const { galleryMeta } = this.props;
+
         return (
-            <div />
+            <GlobalNav
+                iconUrl={galleryMeta?.iconUrl || ''}
+                title={galleryMeta?.title || 'Project Gallery'}
+            />
         );
     }
 }
