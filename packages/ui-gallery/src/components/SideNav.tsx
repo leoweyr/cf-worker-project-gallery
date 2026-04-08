@@ -14,12 +14,44 @@ export interface SideNavProps {
 }
 
 
-class SideNav extends Component<SideNavProps, {}> {
+interface SideNavState {
+    isAnimatedIn: boolean;
+}
+
+
+class SideNav extends Component<SideNavProps, SideNavState> {
     private static readonly SIDENAV_WIDTH: number = 280;
     private static readonly REPO_URL: string = 'https://github.com/leoweyr/cf-worker-project-gallery';
 
+    private _animationFrameId?: number;
+
+    public constructor(properties: SideNavProps) {
+        super(properties);
+
+        this.state = {
+            isAnimatedIn: false
+        };
+    }
+
+    public componentDidMount(): void {
+        this._animationFrameId = requestAnimationFrame((): void => {
+            this.setState((previousState: SideNavState): SideNavState => ({
+                ...previousState,
+                isAnimatedIn: true
+            }));
+        });
+    }
+
+    public componentWillUnmount(): void {
+        if (typeof this._animationFrameId === 'number') {
+            cancelAnimationFrame(this._animationFrameId);
+            this._animationFrameId = undefined;
+        }
+    }
+
     public render(): ReactNode {
         const { isOpen } = this.props;
+        const { isAnimatedIn } = this.state;
 
         if (!isOpen) {
             return null;
@@ -28,11 +60,11 @@ class SideNav extends Component<SideNavProps, {}> {
         return (
             <div style={this._getOverlayStyles()}>
                 <div
-                    style={this._getBackdropStyles()}
+                    style={this._getBackdropStyles(isAnimatedIn)}
                     onClick={this._handleBackdropClick}
                 />
 
-                <aside style={this._getSideNavStyles()}>
+                <aside style={this._getSideNavStyles(isAnimatedIn)}>
                     <div style={this._getContentStyles()}>
                         {this._renderHeader()}
                         {this._renderGitHubInfo()}
@@ -63,7 +95,7 @@ class SideNav extends Component<SideNavProps, {}> {
         };
     }
 
-    private _getBackdropStyles(): CSSProperties {
+    private _getBackdropStyles(isAnimatedIn: boolean): CSSProperties {
         return {
             position: 'absolute',
             top: 0,
@@ -71,11 +103,13 @@ class SideNav extends Component<SideNavProps, {}> {
             right: 0,
             bottom: 0,
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            opacity: isAnimatedIn ? 1 : 0,
+            transition: 'opacity 0.2s ease-out'
         };
     }
 
-    private _getSideNavStyles(): CSSProperties {
+    private _getSideNavStyles(isAnimatedIn: boolean): CSSProperties {
         return {
             position: 'absolute',
             top: 0,
@@ -87,7 +121,10 @@ class SideNav extends Component<SideNavProps, {}> {
             boxShadow: '4px 0 24px rgba(0, 0, 0, 0.4)',
             overflow: 'hidden',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            transform: isAnimatedIn ? 'translateX(0)' : 'translateX(-100%)',
+            opacity: isAnimatedIn ? 1 : 0,
+            transition: 'transform 0.24s ease-out, opacity 0.24s ease-out'
         };
     }
 
