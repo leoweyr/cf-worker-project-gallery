@@ -1,16 +1,20 @@
 import { Component, type CSSProperties, type ReactNode } from 'react';
 
+import GitHubInfo from './GitHubInfo';
 
-export interface GlobalNavProperties {
+
+export interface GlobalNavProps {
     iconUrl: string;
     title: string;
+    gitUrl: string;
 }
 
 
-class GlobalNav extends Component<GlobalNavProperties, {}> {
+class GlobalNav extends Component<GlobalNavProps, {}> {
     private static readonly NAV_HEIGHT: number = 64;
     private static readonly ICON_TITLE_SPACING: number = 16;
     private static readonly EDGE_PADDING: number = 24;
+    private static readonly GIT_INFO_BADGE_SPACING: number = 16;
     private static readonly REPO_URL: string = 'https://github.com/leoweyr/cf-worker-project-gallery';
 
     public render(): ReactNode {
@@ -20,6 +24,7 @@ class GlobalNav extends Component<GlobalNavProperties, {}> {
                     {this._renderIcon()}
                     {this._renderTitle()}
                     <div style={{ flex: 1 }} />
+                    {this._renderGitHubInfo()}
                     {this._renderBadge()}
                 </div>
             </nav>
@@ -153,6 +158,20 @@ class GlobalNav extends Component<GlobalNavProperties, {}> {
                 <span style={this._getBadgeLineStyles(false)}>Injected Top Navigation Bar Powered by</span>
                 <span style={this._getBadgeLineStyles(true)}>cf-worker-project-gallery</span>
             </a>
+        );
+    }
+
+    private _renderGitHubInfo(): ReactNode {
+        const { gitUrl } = this.props;
+
+        if (!gitUrl) {
+            return null;
+        }
+
+        return (
+            <div style={{ marginRight: `${GlobalNav.GIT_INFO_BADGE_SPACING}px` }}>
+                <GitHubInfo gitUrl={gitUrl} />
+            </div>
         );
     }
 }

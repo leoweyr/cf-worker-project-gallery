@@ -66,7 +66,7 @@ jobs:
                     pages_project: ${{ vars.CLOUDFLARE_PAGES_PROJECT }}
                     cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                     cloudflare_account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                    github_token: ${{ github.token }}
+                    github_token: ${{ secrets.UI_GALLERY_GITHUB_TOKEN }}
 
     deploy_workers:
         runs-on: ubuntu-latest

@@ -4,7 +4,8 @@ import { type GalleryMeta } from '../types/GalleryMeta';
 export class MetadataExtractor {
     private _galleryMeta: GalleryMeta = {
         title: '',
-        iconUrl: ''
+        iconUrl: '',
+        gitUrl: ''
     };
 
     public getGalleryMeta(): GalleryMeta {
@@ -33,6 +34,19 @@ export class MetadataExtractor {
                     if (!this._galleryMeta.iconUrl) {
                         this._galleryMeta.iconUrl = href;
                     }
+                }
+            }
+        };
+    }
+
+    public createMetaHandler(): HTMLRewriterElementContentHandlers {
+        return {
+            element: (element: Element): void => {
+                const name: string | null = element.getAttribute('name');
+                const content: string | null = element.getAttribute('content');
+
+                if (name && name.toLowerCase() === 'git' && content) {
+                    this._galleryMeta.gitUrl = content;
                 }
             }
         };

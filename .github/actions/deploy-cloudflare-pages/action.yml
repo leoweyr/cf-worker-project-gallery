@@ -51,6 +51,8 @@ runs:
         -   name: 📝 Generate UI Gallery Bundle
             run: pnpm --filter @cf-worker-project-gallery/ui-gallery build
             shell: bash
+            env:
+                UI_GALLERY_GITHUB_TOKEN: ${{ inputs.github_token }}
 
         -   name: 🛠️ Sync Production Branch
             if: ${{ inputs.deployment_environment == 'Production' }}

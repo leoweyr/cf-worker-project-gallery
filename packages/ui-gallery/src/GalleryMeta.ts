@@ -1,6 +1,7 @@
 export interface GalleryMeta {
     iconUrl: string;
     title: string;
+    gitUrl: string;
 }
 
 
