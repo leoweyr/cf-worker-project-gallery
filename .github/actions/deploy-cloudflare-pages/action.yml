@@ -3,6 +3,9 @@ description: Build and deploy UI gallery to Cloudflare Pages.
 
 
 inputs:
+    deployment_environment:
+        description: Deployment environment name.
+        required: true
     pages_branch:
         description: Cloudflare pages branch.
         required: true
@@ -48,6 +51,86 @@ runs:
         -   name: 📝 Generate UI Gallery Bundle
             run: pnpm --filter @cf-worker-project-gallery/ui-gallery build
             shell: bash
+
+        -   name: 🛠️ Sync Production Branch
+            if: ${{ inputs.deployment_environment == 'Production' }}
+            shell: bash
+            env:
+                cloudflare_api_token: ${{ inputs.cloudflare_api_token }}
+                cloudflare_account_id: ${{ inputs.cloudflare_account_id }}
+                pages_project: ${{ inputs.pages_project }}
+                pages_branch: ${{ inputs.pages_branch }}
+            run: |
+                node <<'NODE'
+                (async () => {
+                    const cloudflareApiToken = process.env.cloudflare_api_token || '';
+                    const cloudflareAccountId = process.env.cloudflare_account_id || '';
+                    const pagesProject = process.env.pages_project || '';
+                    const pagesBranch = process.env.pages_branch || '';
+                    const projectApiUrl = `https://api.cloudflare.com/client/v4/accounts/${cloudflareAccountId}/pages/projects/${pagesProject}`;
+                    
+                    const requestHeaders = {
+                        Authorization: `Bearer ${cloudflareApiToken}`,
+                        'Content-Type': 'application/json'
+                    };
+
+                    const getProjectResponse = await fetch(projectApiUrl, {
+                        method: 'GET',
+                        headers: requestHeaders
+                    });
+                
+                    const getProjectPayload = await getProjectResponse.json().catch(() => null);
+
+                    if (!getProjectResponse.ok || !getProjectPayload || getProjectPayload.success !== true) {
+                        console.error('❌ Failed to read Cloudflare Pages project settings.');
+                        
+                        if (getProjectPayload) {
+                            console.error(JSON.stringify(getProjectPayload));
+                        }
+                
+                        process.exit(1);
+                    }
+
+                    const currentProductionBranch = getProjectPayload.result?.production_branch || '';
+
+                    if (currentProductionBranch === pagesBranch) {
+                        console.log(`✅ Cloudflare Pages production branch is already '${pagesBranch}'.`);
+                        return;
+                    }
+
+                    const patchProjectResponse = await fetch(projectApiUrl, {
+                        method: 'PATCH',
+                        headers: requestHeaders,
+                        body: JSON.stringify({
+                            production_branch: pagesBranch
+                        })
+                    });
+                
+                    const patchProjectPayload = await patchProjectResponse.json().catch(() => null);
+
+                    if (!patchProjectResponse.ok || !patchProjectPayload || patchProjectPayload.success !== true) {
+                        console.error('❌ Failed to update Cloudflare Pages production branch.');
+                
+                        if (patchProjectPayload) {
+                            console.error(JSON.stringify(patchProjectPayload));
+                        }
+                
+                        process.exit(1);
+                    }
+
+                    console.log(`✅ Updated Cloudflare Pages production branch from '${currentProductionBranch}' to '${pagesBranch}'.`);
+                })().catch((error) => {
+                    console.error('❌ Unexpected error while syncing Cloudflare Pages production branch.');
+                
+                    if (error instanceof Error) {
+                        console.error(error.message);
+                    } else {
+                        console.error(String(error));
+                    }
+                
+                    process.exit(1);
+                });
+                NODE
 
         -   name: 🚀 Deploy Pages
             id: deploy_pages
