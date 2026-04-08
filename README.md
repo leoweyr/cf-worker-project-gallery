@@ -47,9 +47,9 @@
 
 ## 🧭 Metadata Controls
 
-Configure metadata in each target frontend project's `index.html` (`<head>`), because these metadata values directly affect project gallery global top navigation bar UI behavior.
+Configure metadata in each target frontend project's `index.html` (`<head>`), because these metadata values directly affect project gallery global navigation bar UI behavior.
 
-| Metadata Rule                                                | Global Top Nav Bar Behavior                                  |
+| Metadata Rule                                                | Global Navigation Bar Behavior                               |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | `<title>...</title>`                                         | Controls the title text shown.                               |
 | `<link rel="icon" href="...">`                               | Controls the logo shown.                                     |

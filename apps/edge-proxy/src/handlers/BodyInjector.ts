@@ -32,7 +32,7 @@ export class BodyInjector {
                 z-index: 2147483647;
             }
             
-            #gallery-content-frame {
+            #gallery-original-content {
                 position: fixed;
                 top: 64px;
                 left: 0;
@@ -48,7 +48,7 @@ export class BodyInjector {
         // Keep keyboard focus on the proxied content frame so site shortcuts remain responsive.
         return `<script>(function () {
             const resolveContentFrame = function () {
-                return document.getElementById('gallery-content-frame');
+                return document.getElementById('gallery-original-content');
             };
 
             const focusContentFrame = function () {
@@ -113,7 +113,7 @@ export class BodyInjector {
 <body>
     <script>window.__GALLERY_META__ = ${escapedMeta};</script>
     <div id="gallery-root"></div>
-    <iframe id="gallery-content-frame" src="${iframeSrc}" tabindex="0" title="Project Content"></iframe>
+    <iframe id="gallery-original-content" src="${iframeSrc}" tabindex="0" title="Project Content"></iframe>
     ${keyboardFocusScript}
     <script defer src="${this._uiGalleryBundleUrl}"></script>
 </body>
