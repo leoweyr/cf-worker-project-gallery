@@ -6,6 +6,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Cloudflare Worker Project Gallery</title>
         <meta name="git" content="https://github.com/leoweyr/cf-worker-project-gallery.git"/>
+        <meta name="menu-docs" content="Docs, https://github.com/leoweyr/cf-worker-project-gallery#readme"/>
+        <meta name="menu-issues" content="Issues, https://github.com/leoweyr/cf-worker-project-gallery/issues"/>
+        <meta name="menu-cloudflare-workers-docs" content="Cloudflare Workers Docs, https://developers.cloudflare.com/workers"/>
+        <meta name="menu-cloudflare-pages-docs" content="Cloudflare Pages Docs, https://developers.cloudflare.com/pages"/>
         <style>
             html,
             body {
@@ -37,6 +41,12 @@
                 title: 'Cloudflare Worker Project Gallery',
                 iconUrl: '/icon.svg',
                 gitUrl: 'https://github.com/leoweyr/cf-worker-project-gallery.git',
+                menuItems: [
+                    { identifier: 'docs', label: 'Docs', url: 'https://github.com/leoweyr/cf-worker-project-gallery#readme' },
+                    { identifier: 'issues', label: 'Issues', url: 'https://github.com/leoweyr/cf-worker-project-gallery/issues' },
+                    { identifier: 'cloudflare-workers-docs', label: 'Cloudflare Workers Docs', url: 'https://developers.cloudflare.com/workers' },
+                    { identifier: 'cloudflare-pages-docs', label: 'Cloudflare Pages Docs', url: 'https://developers.cloudflare.com/pages' },
+                ]
             };
         </script>
         <div id="gallery-root"></div>

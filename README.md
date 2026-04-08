@@ -49,8 +49,9 @@
 
 Configure metadata in each target frontend project's `index.html` (`<head>`), because these metadata values directly affect project gallery global top navigation bar UI behavior.
 
-| Metadata Rule                                                       | Global Top Nav Bar Behavior                                         |
-|---------------------------------------------------------------------|---------------------------------------------------------------------|
-| `<title>...</title>`                                                | Controls the title text shown.                                      |
-| `<link rel="icon" href="...">`                                      | Controls the logo shown.                                            |
+| Metadata Rule                                                | Global Top Nav Bar Behavior                                  |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `<title>...</title>`                                         | Controls the title text shown.                               |
+| `<link rel="icon" href="...">`                               | Controls the logo shown.                                     |
 | `<meta name="git" content="https://github.com/<owner>/<repo>.git">` | Enables Git Info UI and displays repository name, stars, and forks. |
+| `<meta name="menu-<id>" content="<label>, <url>">`           | Adds a primary menu item. Multiple menu items are displayed in the order they appear in the HTML source.<br/> `<id>` is a unique identifier.<br/>`<label>` is the displayed text.<br/>`<url>` is the link destination. |

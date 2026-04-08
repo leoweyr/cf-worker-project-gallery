@@ -1,12 +1,15 @@
-import { Component, type CSSProperties, type ReactNode } from 'react';
+import { Component, createRef, type CSSProperties, type ReactNode, type RefObject } from 'react';
 
+import { type MenuItem } from '../MenuItem';
 import GitHubInfo from './GitHubInfo';
+import NavMenu from './NavMenu';
 
 
 export interface GlobalNavProps {
     iconUrl: string;
     title: string;
     gitUrl: string;
+    menuItems: MenuItem[];
 }
 
 
@@ -15,17 +18,58 @@ class GlobalNav extends Component<GlobalNavProps, {}> {
     private static readonly ICON_TITLE_SPACING: number = 16;
     private static readonly EDGE_PADDING: number = 24;
     private static readonly GIT_INFO_BADGE_SPACING: number = 16;
+    private static readonly TITLE_MENU_SPACING: number = 128;
+    private static readonly MENU_RIGHT_BOUNDARY_SPACING: number = 128;
     private static readonly REPO_URL: string = 'https://github.com/leoweyr/cf-worker-project-gallery';
 
+    private _leftSectionRef: RefObject<HTMLDivElement | null> = createRef<HTMLDivElement>();
+    private _rightSectionRef: RefObject<HTMLDivElement | null> = createRef<HTMLDivElement>();
+
+    public constructor(properties: GlobalNavProps) {
+        super(properties);
+
+        this.state = {
+            menuAvailableWidth: 0
+        };
+    }
+
+    public componentDidMount(): void {
+        this._calculateMenuAvailableWidth();
+
+        window.addEventListener('resize', this._handleResize);
+    }
+
+    public componentWillUnmount(): void {
+        window.removeEventListener('resize', this._handleResize);
+    }
+
     public render(): ReactNode {
+        const { menuAvailableWidth } = this.state as { menuAvailableWidth: number };
+
         return (
             <nav style={this._getNavStyles()}>
                 <div style={this._getContainerStyles()}>
-                    {this._renderIcon()}
-                    {this._renderTitle()}
+                    <div
+                        ref={this._leftSectionRef}
+                        style={this._getLeftSectionStyles()}
+                    >
+                        {this._renderIcon()}
+                        {this._renderTitle()}
+                    </div>
+
+                    <div style={this._getMenuSectionStyles()}>
+                        {this._renderNavMenu(menuAvailableWidth)}
+                    </div>
+
                     <div style={{ flex: 1 }} />
-                    {this._renderGitHubInfo()}
-                    {this._renderBadge()}
+
+                    <div
+                        ref={this._rightSectionRef}
+                        style={this._getRightSectionStyles()}
+                    >
+                        {this._renderGitHubInfo()}
+                        {this._renderBadge()}
+                    </div>
                 </div>
             </nav>
         );
@@ -52,6 +96,75 @@ class GlobalNav extends Component<GlobalNavProps, {}> {
             height: '100%',
             padding: `0 ${GlobalNav.EDGE_PADDING}px`
         };
+    }
+
+    private _getLeftSectionStyles(): CSSProperties {
+        return {
+            display: 'flex',
+            alignItems: 'center',
+            flexShrink: 0
+        };
+    }
+
+    private _getMenuSectionStyles(): CSSProperties {
+        return {
+            display: 'flex',
+            alignItems: 'center',
+            marginLeft: `${GlobalNav.TITLE_MENU_SPACING}px`,
+            flexShrink: 1,
+            overflow: 'visible'
+        };
+    }
+
+    private _getRightSectionStyles(): CSSProperties {
+        return {
+            display: 'flex',
+            alignItems: 'center',
+            flexShrink: 0
+        };
+    }
+
+    private _handleResize: () => void = (): void => {
+        this._calculateMenuAvailableWidth();
+    };
+
+    private _calculateMenuAvailableWidth(): void {
+        const leftSection: HTMLDivElement | null = this._leftSectionRef.current;
+        const rightSection: HTMLDivElement | null = this._rightSectionRef.current;
+
+        if (!leftSection || !rightSection) {
+            return;
+        }
+
+        const viewportWidth: number = window.innerWidth;
+        const leftSectionWidth: number = leftSection.offsetWidth;
+        const rightSectionWidth: number = rightSection.offsetWidth;
+
+        // Calculate available width for menu.
+        // Available = Viewport - EdgePadding*2 - LeftSection - TitleMenuSpacing - MenuRightBoundarySpacing - RightSection.
+        const availableWidth: number = viewportWidth
+            - (GlobalNav.EDGE_PADDING * 2)
+            - leftSectionWidth
+            - GlobalNav.TITLE_MENU_SPACING
+            - GlobalNav.MENU_RIGHT_BOUNDARY_SPACING
+            - rightSectionWidth;
+
+        this.setState({ menuAvailableWidth: Math.max(0, availableWidth) });
+    }
+
+    private _renderNavMenu(availableWidth: number): ReactNode {
+        const { menuItems } = this.props;
+
+        if (menuItems.length === 0) {
+            return null;
+        }
+
+        return (
+            <NavMenu
+                menuItems={menuItems}
+                availableWidth={availableWidth}
+            />
+        );
     }
 
     private _getIconStyles(): CSSProperties {
