@@ -9,6 +9,7 @@ export interface GlobalNavProperties {
 
 class GlobalNav extends Component<GlobalNavProperties, {}> {
     private static readonly NAV_HEIGHT: number = 64;
+    private static readonly ICON_TITLE_SPACING: number = 16;
 
     public render(): ReactNode {
         return (
@@ -52,7 +53,7 @@ class GlobalNav extends Component<GlobalNavProperties, {}> {
             height: '32px',
             minWidth: '32px',
             minHeight: '32px',
-            marginRight: '32px',
+            marginRight: `${GlobalNav.ICON_TITLE_SPACING}px`,
             borderRadius: '6px',
             objectFit: 'contain' as const
         };
