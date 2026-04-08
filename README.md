@@ -1,6 +1,4 @@
-# Cloudflare Worker Project Gallery
-
-A Cloudflare Worker proxy that 'frames' your frontend projects into a unified gallery. Automatically injects brand assets, repository links, docs, and contact info at the edge—saving you from building repetitive navigation UI for every site.
+![cf-worker-project-gallery](https://socialify.git.ci/leoweyr/cf-worker-project-gallery/image?description=1&font=Rokkitt&forks=1&issues=1&logo=https%3A%2F%2Fraw.githubusercontent.com%2Fleoweyr%2Fcf-worker-project-gallery%2Frefs%2Fheads%2Fdevelop%2Fpackages%2Fui-gallery%2Fpublic%2Ficon.svg&name=1&owner=1&pattern=Plus&pulls=1&stargazers=1&theme=Light)
 
 ## 🚀 Deployment
 
